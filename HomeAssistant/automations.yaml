@@ -1,0 +1,45 @@
+- id: '1705879353666'
+  alias: LuzCuerto
+  description: ''
+  trigger:
+  - type: motion
+    platform: device
+    device_id: 06d419b301262753b5efa252ef20f9c7
+    entity_id: 4cba8d6bd46284b6268feddbeb5ea7a1
+    domain: binary_sensor
+    id: detected
+  - type: no_motion
+    platform: device
+    device_id: 06d419b301262753b5efa252ef20f9c7
+    entity_id: 4cba8d6bd46284b6268feddbeb5ea7a1
+    domain: binary_sensor
+    id: clear
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - detected
+      sequence:
+      - service: switch.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: switch.room2_luz_room2_luz
+    - conditions:
+      - condition: trigger
+        id:
+        - clear
+      sequence:
+      - delay:
+          hours: 0
+          minutes: 5
+          seconds: 0
+          milliseconds: 0
+      - service: switch.turn_off
+        metadata: {}
+        data: {}
+        target:
+          entity_id: switch.room2_luz_room2_luz
+  mode: single

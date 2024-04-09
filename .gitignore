@@ -1,0 +1,10 @@
+/.vscode
+ESPHome/config/.esphome
+HomeAssistant/.storage
+HomeAssistant/custom_components
+HomeAssistant/*.log
+HomeAssistant/*.log.*
+HomeAssistant/*.db
+HomeAssistant/*.db*
+HomeAssistant/.HA_VERSION
+HomeAssistant/.cloud
