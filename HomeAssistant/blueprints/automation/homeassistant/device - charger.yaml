@@ -1,0 +1,122 @@
+blueprint:
+  name: DEVICE - Charger Switch
+  description: Enciende o apaga un enchufe inteligente según el nivel de la bateríade un dispositivo.
+  domain: automation
+  input:
+    battery:
+      name: Device Battery
+      description: Dispositivo a monitorear.
+      selector:
+        entity:
+          domain: sensor
+          device_class: battery
+
+    target_switch:
+      name: Smart Plug
+      description: Contacto inteligente a controlar
+      selector:
+        entity:
+          domain: switch
+
+    presence_sensor:
+      name: Room Presence Sensor
+      description: Sensor de presencia en la habitación.
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: occupancy
+
+    charge_min:
+      name: Lowest Battery Charge
+      description: La carga minima que se debe permitir llegar a la batería
+      default: 20
+      selector:
+        number:
+          min: 0
+          max: 50
+          step: 5
+          unit_of_measurement: "%"
+          mode: slider
+
+    charge_max:
+      name: Highest Battery Charge
+      description: La carga máxima que se debe permitir llegar a la batería
+      default: 80
+      selector:
+        number:
+          min: 50
+          max: 100
+          step: 5
+          unit_of_measurement: "%"
+          mode: slider
+
+    use_bedtime:
+      name: Charge fully before bed
+      description: Permitir la carga Full en horario de dormir
+      selector:
+        boolean:
+      default: True
+
+    start_bedtime:
+      name: Start Bedtime
+      description: Incio del horario de dormir
+      selector:
+        time:
+      default: '22:00'
+
+    end_bedtime:
+      name: End Bedtime
+      description: Fin del horario de dormir
+      selector:
+        time:
+      default: '05:00'
+
+    charge_full:
+      name: Full Battery Charge
+      description: La batería se considera Full en este porcentaje.
+      default: 95
+      selector:
+        number:
+          min: 80
+          max: 100
+          step: 5
+          unit_of_measurement: "%"
+          mode: slider
+
+variables:
+  battery: !input battery
+  charge_min: !input charge_min
+  charge_max: !input charge_max
+  charge_full: !input charge_full
+  use_bedtime: !input use_bedtime
+  start_bedtime: !input start_bedtime
+  end_bedtime: !input   end_bedtime
+
+trigger:
+  - platform: state
+    entity_id: !input battery
+  - platform: state
+    entity_id: !input presence_sensor
+condition:
+  - condition: state
+    entity_id: !input presence_sensor
+    state: 'on'
+action:
+  - variables:
+      charge: '{{ (states(battery) | float) if is_number(states(battery)) else 1 }}'
+      is_bedtime: '{{ use_bedtime == True and ( now() >= today_at(start_bedtime) or now() < today_at (end_bedtime) ) }}'
+      c_max: '{{ charge_full if is_bedtime else charge_max }}'
+      c_min: '{{ charge_full if is_bedtime else charge_min }} '
+  - choose:
+    - conditions: >
+        {{ charge < (c_min + 1) }}
+      sequence:
+        - service: switch.turn_on
+          target:
+            entity_id: !input target_switch
+    - conditions: >
+        {{ charge >= (c_max - 1) }}
+      sequence:
+        - service: switch.turn_off
+          target:
+            entity_id: !input target_switch

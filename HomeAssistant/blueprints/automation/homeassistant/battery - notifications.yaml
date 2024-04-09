@@ -1,0 +1,1108 @@
+blueprint:
+  name: BATTERY - Notifications & Actions
+  description: >
+    # 🪫 Low Battery Notifications & Actions
+
+    **Version: 1.8**
+    
+    
+    ¡Manténgase cargado, manténgase inteligente! ¡Personalízalo a tu manera y automaticemos el mantenimiento de tu batería! 🔋⚡
+    
+    **El proceso de automatización:**
+      - Tienes dos opciones de activación. Ambas opciones te permitirán enviar una notificación a uno o varios dispositivos, y/o realizar acciones.
+        1. Asistente de botones: tiene la opción de utilizar un asistente de botones. Cuando se presiona, verificará los niveles de la batería.
+        2. Hora y día: tiene la opción de verificar periódicamente los niveles de la batería en un día y una hora determinados.
+      - Tiene la opción de agregar botones de acción a su mensaje, lo que le permite agregar sus baterías bajas a una lista de tareas pendientes.
+      - Tiene la opción de utilizar "Sensores de batería - Grupo personalizado". Puede crear un grupo personalizado de sensores de batería con su propio nivel de advertencia de batería baja independiente para usarlo en su notificación.
+      - Tienes la opción de utilizar "Sensores de batería excluidos". Puede seleccionar excluir los sensores de batería en su notificación.
+      - Tienes la opción de utilizar "Notificación Fácil". Esto le permite configurar fácilmente su mensaje de notificación de batería baja. Si todas sus baterías están bien, también puede seleccionar si desea recibir un "Mensaje de confirmación de aceptación".
+      - Tienes la opción de utilizar acciones personalizadas. Esto se puede usar si desea personalizar su notificación o reproducir un anuncio en The Voice (HA), Google, Alexa, TTS, etc. Tiene 10 sensores que pueden usarse en sus acciones personalizadas.
+      - Tienes la opción de ingresar en las condiciones globales que desees.
+      - Las notificaciones pueden funcionar con dispositivos Apple IOS y Android.
+
+  domain: automation
+  input:
+    include_button:
+      name: Use The Button Helper Trigger (Optional)
+      description: Seleccione si desea que un botón auxiliar active la automatización.
+        Esto es útil si desea verificar los niveles de la batería presionando un botón en la interfaz de usuario.
+      default: disable_button_trigger
+      selector:
+        select:
+          options:
+            - label: Use a button trigger
+              value: "enable_button_trigger"
+            - label: Dont use a button trigger
+              value: "disable_button_trigger"
+    button_entity:
+      name: Button Helper
+      description: Ingrese su botón auxiliar.
+      default: []
+      selector:
+        entity:
+          filter:
+            domain: input_button
+    include_time:
+      name: Use The Time Trigger (Optional)
+      description: Seleccione si desea utilizar el activador de tiempo.
+        Esto es útil si desea verificar periódicamente los niveles de la batería en un día y hora determinados.
+      default: time_disabled
+      selector:
+        select:
+          options:
+            - label: Enable the time options
+              value: "time_enabled"
+            - label: Disable the time options
+              value: "time_disabled"
+    time:
+      name: Time
+      description: Establezca la hora a la que le gustaría ejecutar la automatización.
+      default: '00:00:00'
+      selector:
+        time:
+    weekday_options:
+      name: Weekdays
+      description: Seleccione los días de la semana en los que desea que se ejecute la automatización.
+      default:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+        - sat
+        - sun
+      selector:
+        select:
+          multiple: true
+          mode: list
+          options:
+            - label: Monday
+              value: "mon"
+            - label: Tuesday
+              value: "tue"
+            - label: Wednesday
+              value: "wed"
+            - label: Thursday
+              value: "thu"
+            - label: Friday
+              value: "fri"
+            - label: Saturday
+              value: "sat"
+            - label: Sunday
+              value: "sun"
+    battery_level:
+      name: Battery Low Warning Level
+      description: Establezca el nivel de advertencia de batería baja.
+      default: 20
+      selector:
+        number:
+          min: 1
+          max: 100
+          step: 1
+          unit_of_measurement: '%'
+    exclude_sensors:
+      name: Excluded Battery Sensors (Optional)
+      description: Seleccione los sensores de batería que se excluirán cuando se ejecute la automatización.
+        La automatización intentará encontrar todos los sensores de batería utilizados en Home Assistant. Esto también
+        Incluya las baterías de sus teléfonos, tabletas, etc. y, a veces, no siempre es conveniente o necesario verificarlas.
+        Ingresar esas baterías aquí las excluirá de sus notificaciones.
+        
+      
+        
+      default: { entity_id: [] }
+      selector:
+        target:
+          entity:
+            device_class: battery
+    custom_group:
+      name: Battery Sensors - Custom Group (Optional)
+      description: Puede seleccionar un grupo personalizado de sensores de batería para usar en su notificación.
+        El grupo personalizado tiene su propia configuración independiente de "Nivel de advertencia de batería baja" a continuación.
+        Cuando utilice todas las baterías + el grupo personalizado en una automatización, se recomienda excluir también el grupo personalizado de baterías anterior en "Sensores de batería excluidos".
+        Los sensores de batería excluidos no están vinculados a este grupo personalizado.
+        
+        **NOTA** - Sólo puedes utilizar entidades. No se admiten áreas ni dispositivos.
+      default: { entity_id: [] }
+      selector:
+        target:
+          entity:
+            device_class: battery
+    custom_group_battery_level:
+      name: Custom Group - Battery Low Warning Level
+      description: Establezca el nivel de advertencia de batería baja.
+      default: 20
+      selector:
+        number:
+          min: 1
+          max: 100
+          step: 1
+          unit_of_measurement: '%'
+    include_easy_notify:
+      name: Use The Easy Notify Options (Optional)
+      description: La notificación fácil le permite seleccionar 1 de los 3 mensajes preestablecidos.
+        También puede seleccionar si desea recibir un mensaje de confirmación de que todas las baterías están bien.
+        Si desea personalizar sus notificaciones o utilizar The Voice (HA), Google, Alexa, TTS, etc., utilice las siguientes opciones de acción personalizadas.
+      default: disabled_easy_notify
+      selector:
+        select:
+          options:
+            - label: Enable Easy Notify
+              value: "enable_easy_notify"
+            - label: Enable Easy Notify + Okay Confirmation Message
+              value: "enable_easy_okay_notify"
+            - label: Disable Easy Notify
+              value: "disabled_easy_notify"
+    sensor_selection:
+      name: Easy Notify - Sensor Selection
+      description: La notificación fácil le permite seleccionar fácilmente qué sensores le gustaría usar en su notificación.
+      default: enable_all_sensors
+      selector:
+        select:
+          options:
+            - label: Use Battery Sensors - Custom Group
+              value: "enable_battery_sensors_custom_group"
+            - label: Use All Battery Sensors Minus Excluded Battery Sensors
+              value: "enable_all_sensors"
+            - label: Use All Battery Sensors Minus Excluded Battery Sensors + Custom Group
+              value: "enable_all_and_custom_group_sensors"
+    notify_device:
+      name: Easy Notify - Devices Notified
+      description: Seleccione los dispositivos a notificar.
+      default: []
+      selector:
+        device:
+          filter:
+            - integration: mobile_app
+          multiple: true
+    notify_title:
+      name: Easy Notify - Title
+      description: Ingrese el título de notificación de su mensaje.
+      default: Low Battery Notification
+      selector:
+        text:
+    notify_message:
+      name: Easy Notify - Message
+      description: Puede seleccionar 1 de los 3 mensajes preestablecidos en el menú desplegable.
+        1 - Sensores de batería baja + % de nivel de batería + Sensores no disponibles.
+        2 - Sensores de batería baja + Nivel de batería %.
+        3 - Sensores no disponibles.
+      default: all_sensors
+      selector:
+        select:
+          mode: dropdown
+          options:
+            - label: Low battery sensors + Battery level % + Unavailable sensors
+              value: "all_sensors"
+            - label: Low battery sensors + Battery level %
+              value: "sensors"
+            - label: Unavailable sensors
+              value: "unavailable_sensors"
+    notify_okay_message:
+      name: Easy Notify - Okay Confirmation Message
+      description: Ingrese el mensaje de notificación que le gustaría recibir cuando todas sus baterías estén bien.
+      default: YES! All batteries are okay :)
+      selector:
+        text:
+    notify_action_buttons:
+      name: Easy Notify - Action Buttons (Optional)
+      description: Mejore sus notificaciones con una función de botón de lista de tareas pendientes procesable.
+        Con solo mantener presionado, soltar y tocar, agregue sin esfuerzo elementos seleccionados de su notificación de batería baja a cualquiera de sus listas de tareas pendientes elegidas.
+        Además, para mayor seguridad, puede optar por recibir un mensaje de confirmación de la acción.
+      default: disabled_notify_action_buttons
+      selector:
+        select:
+          options:
+            - label: Add To-Do List Action Buttons
+              value: "enable_to_do_list_button"
+            - label: Add To-Do List Action Buttons + Confirmation Message
+              value: "enable_to_do_list_button_and_confirmation"
+            - label: Disable Action Buttons
+              value: "disabled_notify_action_buttons"
+    to_do_list:
+      name: Easy Notify Action Buttons - To-Do List Selection
+      description: Elija la lista de tareas pendientes donde desea agregar su tarea.
+        
+        
+        **Nota** - la lista de compras predeterminada no es compatible debido a su falta de capacidad de descripción.
+        Sin embargo, todas las demás listas de tareas pendientes son totalmente compatibles.
+      default: []
+      selector:
+        entity:
+          domain: todo
+    to_do_task_title:
+      name: Easy Notify Action Buttons - Task Title
+      description: Cuando se presiona el botón de acción, se agregará una tarea a la lista de tareas pendientes elegida.
+        Ingrese el título que desea para su tarea pendiente
+      default: Batteries To Be Replaced
+      selector:
+        text:
+    action_button_to_do:
+      name: Easy Notify Action Buttons - Action Button
+      description: Especifique el nombre del botón de acción que se mostrará en la notificación.
+        Cuando se presiona, este botón agrega sin esfuerzo una tarea a la lista de tareas pendientes elegida.
+      default: Add To To-Do List!
+      selector:
+        text:
+    action_button_cancel:
+      name: Easy Notify Action Buttons - Cancel Button
+      description: Especifique el nombre del botón cancelar que se mostrará en la notificación.
+        Este botón le permite cancelar el proceso de adición de tareas.
+      default: Cancel
+      selector:
+        text:
+    action_button_confirmation_title:
+      name: Easy Notify Action Buttons - Action & Cancel Button Confirmation Title
+      description: Ingrese un título para el mensaje de notificación de confirmación cuando se presione un botón de acción o un botón de cancelar.
+      default: Low Battery Confirmation
+      selector:
+        text:
+    action_button_confirmation_message:
+      name: Easy Notify Action Buttons - Action Button Confirmation Message
+      description: Ingrese el mensaje para recibir el mensaje de notificación de confirmación cuando se presione el botón de acción.
+      default: Your low batteries have been added to your To-Do list
+      selector:
+        text:
+    cancel_action_button_confirmation_message:
+      name: Easy Notify Action Buttons - Cancel Button Confirmation Message
+      description: Ingrese el mensaje para recibir el mensaje de notificación de confirmación cuando se presione el botón cancelar.
+      default: Canceled - Nothing was added to your To-Do list
+      selector:
+        text:
+    include_custom_actions:
+      name: Use The Custom Action Options (Optional)
+      description: Puede agregar cualquier acción que desee realizar cuando se active la automatización.
+      default: disabled_custom_actions
+      selector:
+        select:
+          options:
+            - label: Enable Custom Actions
+              value: "enable_custom_actions"
+            - label: Disable Custom Actions
+              value: "disabled_custom_actions"
+    custom_actions:
+      name: Custom Actions
+      description: Ingrese las acciones que desea ejecutar cuando se active la automatización.
+        Esto normalmente se usa si desea personalizar su notificación o reproducir un anuncio en The Voice (HA), Google, Alexa, TTS, etc.
+        Tienes 10 sensores que puedes incluir en un mensaje dependiendo de lo que te gustaría usar.
+        
+        
+        **Todos los sensores de batería menos excluidos**
+
+        1 - Use "{{all_sensors}}" for - Low battery sensors + Battery level % + Unavailable sensors.
+
+        2 - Use "{{sensors}}" for - Low battery sensors + Battery level %.
+
+        3 - Use "{{unavailable_sensors}}" for - Unavailable sensors.
+
+        4 - Use "{{sensors_names}}" for - Low battery sensors - Sensor name only.
+        
+        5 - Use "{{unavailable_sensors_names}}" for - Unavailable sensors - Sensor name only.
+
+
+        **Battery Sensors - Custom Group**
+
+        1 - Use "{{all_sensors_custom_group}}" for - Low battery sensors + Battery level % + Unavailable sensors.
+
+        2 - Use "{{sensors_custom_group}}" for - Low battery sensors + Battery level %.
+
+        3 - Use "{{unavailable_sensors_custom_group}}" for - Unavailable sensors.
+
+        4 - Use "{{sensors_names_custom_group}}" for - Low battery sensors - Sensor name only.
+        
+        5 - Use "{{unavailable_sensors_names_custom_group}}" for - Unavailable sensors - Sensor name only.
+      default: []
+      selector:
+        action:
+    global_conditions:
+      name: Global Conditions
+      description: Ingrese las condiciones globales que le gustaría aplicar a la automatización.
+      default: []
+      selector:
+        condition:
+
+mode: restart
+max_exceeded: silent
+
+variables:
+  include_button: !input include_button
+  button_entity: !input button_entity
+  include_time: !input include_time
+  time: !input time
+  weekday_options: !input weekday_options
+  battery_level: !input battery_level
+  exclude_sensors: !input exclude_sensors
+  custom_group: !input custom_group
+  custom_group_battery_level: !input custom_group_battery_level
+  include_easy_notify: !input include_easy_notify
+  sensor_selection: !input sensor_selection
+  notify_device: !input notify_device
+  notify_title: !input notify_title
+  notify_message: !input notify_message
+  notify_okay_message: !input notify_okay_message
+  notify_action_buttons: !input notify_action_buttons
+  to_do_list: !input to_do_list
+  to_do_task_title: !input to_do_task_title
+  action_button_to_do: !input action_button_to_do
+  action_button_cancel: !input action_button_cancel
+  action_button_confirmation_title: !input action_button_confirmation_title
+  action_button_confirmation_message: !input action_button_confirmation_message
+  cancel_action_button_confirmation_message: !input cancel_action_button_confirmation_message
+  include_custom_actions: !input include_custom_actions
+  global_conditions: !input global_conditions
+
+# Sensors to report in text message - default
+
+  all_sensors: >-
+    {% set low_battery = namespace(sensors=[]) %}
+    {% for state in states.sensor | rejectattr('attributes.device_class', 'undefined') | selectattr('attributes.device_class', '==', 'battery') %}
+      {% if 0 <= state.state | int(-1) <= battery_level | int and not state.entity_id in exclude_sensors.entity_id %}
+        {% set low_battery.sensors = low_battery.sensors + [state.name ~ ' @ ' ~ state.state ~ '%'] %}
+      {% endif %}
+    {% endfor %}
+    {% for state in states.binary_sensor | rejectattr('attributes.device_class', 'undefined') | selectattr('attributes.device_class', '==', 'battery') | selectattr('state', '==', 'on') %}
+      {% if not state.entity_id in exclude_sensors.entity_id %}
+        {% set low_battery.sensors = low_battery.sensors + [state.name ~ ' is low' ~ '!'] %}
+      {% endif %}
+    {% endfor %}
+    {% for state in states.sensor | rejectattr('attributes.device_class', 'undefined') | selectattr('attributes.device_class', '==', 'battery') %}
+      {% if "unavailable" in state | string and not state.entity_id in exclude_sensors.entity_id %}
+        {% set low_battery.sensors = low_battery.sensors + [state.name ~ ' is ' ~ state.state ~ '!'] %}
+      {% endif %}
+    {% endfor %}
+    {{low_battery.sensors | sort(attribute='battery_level') | join(', ')}}
+
+  sensors: >-
+    {% set low_battery = namespace(sensors=[]) %}
+    {% for state in states.sensor | rejectattr('attributes.device_class', 'undefined') | selectattr('attributes.device_class', '==', 'battery') %}
+      {% if 0 <= state.state | int(-1) <= battery_level | int and not state.entity_id in exclude_sensors.entity_id %}
+        {% set low_battery.sensors = low_battery.sensors + [state.name ~ ' @ ' ~ state.state ~ '%'] %}
+      {% endif %}
+    {% endfor %}
+    {% for state in states.binary_sensor | rejectattr('attributes.device_class', 'undefined') | selectattr('attributes.device_class', '==', 'battery') | selectattr('state', '==', 'on') %}
+      {% if not state.entity_id in exclude_sensors.entity_id %}
+        {% set low_battery.sensors = low_battery.sensors + [state.name ~ ' is low' ~ '!'] %}
+      {% endif %}
+    {% endfor %}
+    {{low_battery.sensors |sort(attribute='battery_level') | join(', ')}}
+
+  unavailable_sensors: >-
+    {% set low_battery = namespace(sensors=[]) %}
+    {% for state in states.sensor | rejectattr('attributes.device_class', 'undefined') | selectattr('attributes.device_class', '==', 'battery') %}
+      {% if "unavailable" in state | string and not state.entity_id in exclude_sensors.entity_id %}
+        {% set low_battery.sensors = low_battery.sensors + [state.name ~ ' is ' ~ state.state ~ '!'] %}
+      {% endif %}
+    {% endfor %}
+    {{low_battery.sensors |sort(attribute='battery_level') | join(', ')}}
+
+# Sensors to report in voice message
+
+  sensors_names: >-
+    {% set low_battery = namespace(sensors=[]) %}
+    {% for state in states.sensor | rejectattr('attributes.device_class', 'undefined') | selectattr('attributes.device_class', '==', 'battery') %}
+      {% if 0 <= state.state | int(-1) <= battery_level | int and not state.entity_id in exclude_sensors.entity_id %}
+        {% set low_battery.sensors = low_battery.sensors + [state.name] %}
+      {% endif %}
+    {% endfor %}
+    {% for state in states.binary_sensor | rejectattr('attributes.device_class', 'undefined') | selectattr('attributes.device_class', '==', 'battery') | selectattr('state', '==', 'on') %}
+      {% if not state.entity_id in exclude_sensors.entity_id %}
+        {% set low_battery.sensors = low_battery.sensors + [state.name] %}
+      {% endif %}
+    {% endfor %}
+    {{low_battery.sensors | sort(attribute='battery_level') | join(', ')}}
+
+  unavailable_sensors_names: >-
+    {% set low_battery = namespace(sensors=[]) %}
+    {% for state in states.sensor | rejectattr('attributes.device_class', 'undefined') | selectattr('attributes.device_class', '==', 'battery') %}
+      {% if "unavailable" in state | string and not state.entity_id in exclude_sensors.entity_id %}
+        {% set low_battery.sensors = low_battery.sensors + [state.name] %}
+      {% endif %}
+    {% endfor %}
+    {{low_battery.sensors |sort(attribute='battery_level') | join(', ')}}
+
+# Battery sensors for custom group
+
+  all_sensors_custom_group: >-
+    {% set low_battery = namespace(sensors=[]) %}
+    {% for state in states.sensor | rejectattr('attributes.device_class', 'undefined') | selectattr('attributes.device_class', '==', 'battery') %}
+      {% if 0 <= state.state | int(-1) <= custom_group_battery_level | int and state.entity_id in custom_group.entity_id %}
+        {% set low_battery.sensors = low_battery.sensors + [state.name ~ ' @ ' ~ state.state ~ '%'] %}
+      {% endif %}
+    {% endfor %}
+    {% for state in states.binary_sensor | rejectattr('attributes.device_class', 'undefined') | selectattr('attributes.device_class', '==', 'battery') | selectattr('state', '==', 'on') %}
+      {% if state.entity_id in custom_group.entity_id %}
+        {% set low_battery.sensors = low_battery.sensors + [state.name ~ ' is low' ~ '!'] %}
+      {% endif %}
+    {% endfor %}
+    {% for state in states.sensor | rejectattr('attributes.device_class', 'undefined') | selectattr('attributes.device_class', '==', 'battery') %}
+      {% if "unavailable" in state | string and state.entity_id in custom_group.entity_id %}
+        {% set low_battery.sensors = low_battery.sensors + [state.name ~ ' is ' ~ state.state ~ '!'] %}
+      {% endif %}
+    {% endfor %}
+    {{low_battery.sensors | sort(attribute='custom_group_battery_level') | join(', ')}}
+
+  sensors_custom_group: >-
+    {% set low_battery = namespace(sensors=[]) %}
+    {% for state in states.sensor | rejectattr('attributes.device_class', 'undefined') | selectattr('attributes.device_class', '==', 'battery') %}
+      {% if 0 <= state.state | int(-1) <= custom_group_battery_level | int and state.entity_id in custom_group.entity_id %}
+        {% set low_battery.sensors = low_battery.sensors + [state.name ~ ' @ ' ~ state.state ~ '%'] %}
+      {% endif %}
+    {% endfor %}
+    {% for state in states.binary_sensor | rejectattr('attributes.device_class', 'undefined') | selectattr('attributes.device_class', '==', 'battery') | selectattr('state', '==', 'on') %}
+      {% if state.entity_id in custom_group.entity_id %}
+        {% set low_battery.sensors = low_battery.sensors + [state.name ~ ' is low' ~ '!'] %}
+      {% endif %}
+    {% endfor %}
+    {{low_battery.sensors |sort(attribute='custom_group_battery_level') | join(', ')}}
+
+  unavailable_sensors_custom_group: >-
+    {% set low_battery = namespace(sensors=[]) %}
+    {% for state in states.sensor | rejectattr('attributes.device_class', 'undefined') | selectattr('attributes.device_class', '==', 'battery') %}
+      {% if "unavailable" in state | string and state.entity_id in custom_group.entity_id %}
+        {% set low_battery.sensors = low_battery.sensors + [state.name ~ ' is ' ~ state.state ~ '!'] %}
+      {% endif %}
+    {% endfor %}
+    {{low_battery.sensors |sort(attribute='custom_group_battery_level') | join(', ')}}
+
+# Sensors to report in voice message custom group
+
+  sensors_names_custom_group: >-
+    {% set low_battery = namespace(sensors=[]) %}
+    {% for state in states.sensor | rejectattr('attributes.device_class', 'undefined') | selectattr('attributes.device_class', '==', 'battery') %}
+      {% if 0 <= state.state | int(-1) <= custom_group_battery_level | int and state.entity_id in custom_group.entity_id %}
+        {% set low_battery.sensors = low_battery.sensors + [state.name] %}
+      {% endif %}
+    {% endfor %}
+    {% for state in states.binary_sensor | rejectattr('attributes.device_class', 'undefined') | selectattr('attributes.device_class', '==', 'battery') | selectattr('state', '==', 'on') %}
+      {% if state.entity_id in custom_group.entity_id %}
+        {% set low_battery.sensors = low_battery.sensors + [state.name] %}
+      {% endif %}
+    {% endfor %}
+    {{low_battery.sensors | sort(attribute='custom_group_battery_level') | join(', ')}}
+
+  unavailable_sensors_names_custom_group: >-
+    {% set low_battery = namespace(sensors=[]) %}
+    {% for state in states.sensor | rejectattr('attributes.device_class', 'undefined') | selectattr('attributes.device_class', '==', 'battery') %}
+      {% if "unavailable" in state | string and state.entity_id in custom_group.entity_id %}
+        {% set low_battery.sensors = low_battery.sensors + [state.name] %}
+      {% endif %}
+    {% endfor %}
+    {{low_battery.sensors |sort(attribute='custom_group_battery_level') | join(', ')}}
+
+# Sensors for the To-Do message
+
+  to_do_message: >-
+    {% set low_battery = namespace(sensors=[]) %}
+    {% if sensor_selection == 'enable_battery_sensors_custom_group' and notify_message == 'all_sensors' %}
+      {{all_sensors_custom_group|replace(', ', '\n')}}
+    {% elif sensor_selection == 'enable_battery_sensors_custom_group' and notify_message == 'sensors'%}
+      {{sensors_custom_group|replace(', ', '\n')}}
+    {% elif sensor_selection == 'enable_battery_sensors_custom_group' and notify_message == 'unavailable_sensors'%}
+      {{unavailable_sensors_custom_group|replace(', ', '\n')}}
+    {% elif sensor_selection == 'enable_all_sensors' and notify_message == 'all_sensors' %}
+      {{all_sensors|replace(', ', '\n')}}
+    {% elif sensor_selection == 'enable_all_sensors' and notify_message == 'sensors'%}
+      {{sensors|replace(', ', '\n')}}
+    {% elif sensor_selection == 'enable_all_sensors' and notify_message == 'unavailable_sensors'%}
+      {{unavailable_sensors|replace(', ', '\n')}}
+    {% elif sensor_selection == 'enable_all_and_custom_group_sensors' and notify_message == 'all_sensors' %}
+      {{all_sensors|replace(', ', '\n')}}{{'\n'}}{{all_sensors_custom_group|replace(', ', '\n')}}
+    {% elif sensor_selection == 'enable_all_and_custom_group_sensors' and notify_message == 'sensors'%}
+      {{sensors|replace(', ', '\n')}}{{'\n'}}{{sensors_custom_group|replace(', ', '\n')}}
+    {% elif sensor_selection == 'enable_all_and_custom_group_sensors' and notify_message == 'unavailable_sensors'%}
+      {{unavailable_sensors|replace(', ', '\n')}}{{'\n'}}{{unavailable_sensors_custom_group|replace(', ', '\n')}}
+    {% else %}
+      []
+    {% endif %}
+
+trigger:
+  - platform: state
+    entity_id: !input button_entity
+    id: 't0'
+  - platform: time
+    at: !input time
+    id: 't1'
+
+# All Conditions
+condition:
+#Trigger conditions
+  - condition: or
+    conditions:
+      - condition: and # trigger from off to on
+        conditions:
+          - condition: trigger
+            id: 't0'
+          -  "{{ include_button == 'enable_button_trigger' }}"
+      - condition: and # trigger by the start of night lights time & check if any lights are on
+        conditions:
+          - condition: trigger
+            id: 't1'
+          -  "{{ include_time == 'time_enabled' }}"
+
+# Check The Weekday Option
+  - condition: or
+    conditions:
+      - "{{ include_time == 'time_disabled' }}"
+      - condition: and
+        conditions:
+        - condition: time
+          weekday: !input weekday_options
+        - "{{ include_time == 'time_enabled' }}"
+      - condition: trigger
+        id: 't0'
+
+# Global Conditions
+  - condition: and
+    conditions: !input global_conditions
+
+action:
+  - choose:
+    - alias: "Perform the custom end action"
+      conditions:
+        - condition: template
+          value_template: "{{ include_custom_actions == 'enable_custom_actions' }}"
+      sequence: !input custom_actions
+  - choose:
+    - alias: "Use the easy notify option - all sensors"
+      conditions:
+        - condition: template
+          value_template: "{{ (include_easy_notify == 'enable_easy_notify') or (include_easy_notify == 'enable_easy_okay_notify') }}"
+        - condition: template
+          value_template: "{{ sensor_selection == 'enable_all_sensors'}}"
+      sequence:
+        - alias: Send a notification to each device
+          repeat:
+            for_each: !input notify_device
+            sequence:
+              - choose:
+                - alias: "All sensors"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ notify_message == 'all_sensors' }}"
+                  sequence:
+                    - choose:
+                      - alias: "Sensors have been found"
+                        conditions:
+                          - "{{ all_sensors != '''''' }}"
+                        sequence:
+                          - choose:
+                            - alias: "All sensors with no action button"
+                              conditions:
+                                - "{{ notify_action_buttons == 'disabled_notify_action_buttons' }}"
+                              sequence:
+                                - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                  data:
+                                    title: !input notify_title
+                                    message: "{{all_sensors|replace(', ', '\n')}}"
+                                    data:
+                                      sticky: "true"
+                            - alias: "All sensors with action button"
+                              conditions:
+                                - "{{ notify_action_buttons != 'disabled_notify_action_buttons' }}"
+                              sequence:
+                                - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                  data:
+                                    title: !input notify_title
+                                    message: "{{all_sensors|replace(', ', '\n')}}"
+                                    data:
+                                      sticky: "true"
+                                      actions:
+                                        - action: "{{ action_button_to_do }}"
+                                          title: !input action_button_to_do
+                                        - action: "{{ action_button_cancel }}"
+                                          title: !input action_button_cancel
+                      - alias: "No sensors have been found"
+                        conditions:
+                          - "{{ not all_sensors != '''''' }}"
+                          - "{{ include_easy_notify == 'enable_easy_okay_notify' }}"
+                        sequence:
+                          - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                            data:
+                              title: !input notify_title
+                              message: !input notify_okay_message
+                              data:
+                                sticky: "true"
+                - alias: "Sensors"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ notify_message == 'sensors' }}"
+                  sequence:
+                    - choose:
+                      - alias: "Sensors have been found"
+                        conditions:
+                          - "{{ sensors != '''' }}"
+                        sequence:
+                          - choose:
+                            - alias: "Sensors with no action button"
+                              conditions:
+                                - "{{ notify_action_buttons == 'disabled_notify_action_buttons' }}"
+                              sequence:
+                                - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                  data:
+                                    title: !input notify_title
+                                    message: "{{sensors|replace(', ', '\n')}}"
+                                    data:
+                                      sticky: "true"
+                            - alias: "Sensors with action button"
+                              conditions:
+                                - "{{ notify_action_buttons != 'disabled_notify_action_buttons' }}"
+                              sequence:
+                                - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                  data:
+                                    title: !input notify_title
+                                    message: "{{sensors|replace(', ', '\n')}}"
+                                    data:
+                                      sticky: "true"
+                                      actions:
+                                        - action: "{{ action_button_to_do }}"
+                                          title: !input action_button_to_do
+                                        - action: "{{ action_button_cancel }}"
+                                          title: !input action_button_cancel
+                      - alias: "No sensors have been found"
+                        conditions:
+                          - "{{ not sensors != '''' }}"
+                          - "{{ include_easy_notify == 'enable_easy_okay_notify' }}"
+                        sequence:
+                          - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                            data:
+                              title: !input notify_title
+                              message: !input notify_okay_message
+                              data:
+                                sticky: "true"
+                - alias: "All unavailable sensors"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ notify_message == 'unavailable_sensors' }}"
+                  sequence:
+                    - choose:
+                      - alias: "Sensors have been found"
+                        conditions:
+                          - "{{ unavailable_sensors != '' }}"
+                        sequence:
+                          - choose:
+                            - alias: "Unavailable sensors with no action button"
+                              conditions:
+                                - "{{ notify_action_buttons == 'disabled_notify_action_buttons' }}"
+                              sequence:
+                                - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                  data:
+                                    title: !input notify_title
+                                    message: "{{unavailable_sensors|replace(', ', '\n')}}"
+                                    data:
+                                      sticky: "true"
+                            - alias: "Unavailable sensors with action button"
+                              conditions:
+                                - "{{ notify_action_buttons != 'disabled_notify_action_buttons' }}"
+                              sequence:
+                                - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                  data:
+                                    title: !input notify_title
+                                    message: "{{unavailable_sensors|replace(', ', '\n')}}"
+                                    data:
+                                      sticky: "true"
+                                      actions:
+                                        - action: "{{ action_button_to_do }}"
+                                          title: !input action_button_to_do
+                                        - action: "{{ action_button_cancel }}"
+                                          title: !input action_button_cancel
+                      - alias: "No sensors have been found"
+                        conditions:
+                          - "{{ not unavailable_sensors != '' }}"
+                          - "{{ include_easy_notify == 'enable_easy_okay_notify' }}"
+                        sequence:
+                          - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                            data:
+                              title: !input notify_title
+                              message: !input notify_okay_message
+                              data:
+                                sticky: "true"
+  - choose:
+    - alias: "Use the easy notify option - custom group"
+      conditions:
+        - condition: template
+          value_template: "{{ (include_easy_notify == 'enable_easy_notify') or (include_easy_notify == 'enable_easy_okay_notify') }}"
+        - condition: template
+          value_template: "{{ sensor_selection == 'enable_battery_sensors_custom_group'}}"
+      sequence:
+        - alias: Send a notification to each device
+          repeat:
+            for_each: !input notify_device
+            sequence:
+              - choose:
+                - alias: "All sensors"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ notify_message == 'all_sensors' }}"
+                  sequence:
+                    - choose:
+                      - alias: "Sensors have been found"
+                        conditions:
+                          - "{{ all_sensors_custom_group != '''''' }}"
+                        sequence:
+                          - choose:
+                            - alias: "Custom Group all sensors with no action button"
+                              conditions:
+                                - "{{ notify_action_buttons == 'disabled_notify_action_buttons' }}"
+                              sequence:
+                                - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                  data:
+                                    title: !input notify_title
+                                    message: "{{all_sensors_custom_group|replace(', ', '\n')}}"
+                                    data:
+                                      sticky: "true"
+                            - alias: "Custom Group all sensors with action button"
+                              conditions:
+                                - "{{ notify_action_buttons != 'disabled_notify_action_buttons' }}"
+                              sequence:
+                                - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                  data:
+                                    title: !input notify_title
+                                    message: "{{all_sensors_custom_group|replace(', ', '\n')}}"
+                                    data:
+                                      sticky: "true"
+                                      actions:
+                                        - action: "{{ action_button_to_do }}"
+                                          title: !input action_button_to_do
+                                        - action: "{{ action_button_cancel }}"
+                                          title: !input action_button_cancel
+                      - alias: "No sensors have been found"
+                        conditions:
+                          - "{{ not all_sensors_custom_group != '''''' }}"
+                          - "{{ include_easy_notify == 'enable_easy_okay_notify' }}"
+                        sequence:
+                          - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                            data:
+                              title: !input notify_title
+                              message: !input notify_okay_message
+                              data:
+                                sticky: "true"
+                - alias: "Sensors"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ notify_message == 'sensors' }}"
+                  sequence:
+                    - choose:
+                      - alias: "Sensors have been found"
+                        conditions:
+                          - "{{ sensors_custom_group != '''' }}"
+                        sequence:
+                          - choose:
+                            - alias: "Custom Group sensors with no action button"
+                              conditions:
+                                - "{{ notify_action_buttons == 'disabled_notify_action_buttons' }}"
+                              sequence:
+                                - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                  data:
+                                    title: !input notify_title
+                                    message: "{{sensors_custom_group|replace(', ', '\n')}}"
+                                    data:
+                                      sticky: "true"
+                            - alias: "Custom Group sensors with action button"
+                              conditions:
+                                - "{{ notify_action_buttons != 'disabled_notify_action_buttons' }}"
+                              sequence:
+                                - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                  data:
+                                    title: !input notify_title
+                                    message: "{{sensors_custom_group|replace(', ', '\n')}}"
+                                    data:
+                                      sticky: "true"
+                                      actions:
+                                        - action: "{{ action_button_to_do }}"
+                                          title: !input action_button_to_do
+                                        - action: "{{ action_button_cancel }}"
+                                          title: !input action_button_cancel
+                      - alias: "No sensors have been found"
+                        conditions:
+                          - "{{ not sensors_custom_group != '''' }}"
+                          - "{{ include_easy_notify == 'enable_easy_okay_notify' }}"
+                        sequence:
+                          - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                            data:
+                              title: !input notify_title
+                              message: !input notify_okay_message
+                              data:
+                                sticky: "true"
+                - alias: "All unavailable sensors"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ notify_message == 'unavailable_sensors' }}"
+                  sequence:
+                    - choose:
+                      - alias: "Sensors have been found"
+                        conditions:
+                          - "{{ unavailable_sensors_custom_group != '' }}"
+                        sequence:
+                          - choose:
+                            - alias: "Custom Group unavailable sensors with no action button"
+                              conditions:
+                                - "{{ notify_action_buttons == 'disabled_notify_action_buttons' }}"
+                              sequence:
+                                - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                  data:
+                                    title: !input notify_title
+                                    message: "{{unavailable_sensors_custom_group|replace(', ', '\n')}}"
+                                    data:
+                                      sticky: "true"
+                            - alias: "Custom Group unavailable sensors with action button"
+                              conditions:
+                                - "{{ notify_action_buttons != 'disabled_notify_action_buttons' }}"
+                              sequence:
+                                - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                  data:
+                                    title: !input notify_title
+                                    message: "{{unavailable_sensors_custom_group|replace(', ', '\n')}}"
+                                    data:
+                                      sticky: "true"
+                                      actions:
+                                        - action: "{{ action_button_to_do }}"
+                                          title: !input action_button_to_do
+                                        - action: "{{ action_button_cancel }}"
+                                          title: !input action_button_cancel
+                      - alias: "No sensors have been found"
+                        conditions:
+                          - "{{ not unavailable_sensors_custom_group != '' }}"
+                          - "{{ include_easy_notify == 'enable_easy_okay_notify' }}"
+                        sequence:
+                          - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                            data:
+                              title: !input notify_title
+                              message: !input notify_okay_message
+                              data:
+                                sticky: "true"
+  - choose:
+    - alias: "Use the easy notify option - all sensors + custom group"
+      conditions:
+        - condition: template
+          value_template: "{{ (include_easy_notify == 'enable_easy_notify') or (include_easy_notify == 'enable_easy_okay_notify') }}"
+        - condition: template
+          value_template: "{{ sensor_selection == 'enable_all_and_custom_group_sensors'}}"
+      sequence:
+        - alias: Send a notification to each device
+          repeat:
+            for_each: !input notify_device
+            sequence:
+              - choose:
+                - alias: "All sensors"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ notify_message == 'all_sensors' }}"
+                  sequence:
+                    - choose:
+                      - alias: "Sensors have been found"
+                        conditions:
+                          - "{{ (all_sensors != '''''') or (all_sensors_custom_group != '''''') }}"
+                        sequence:
+                          - choose:
+                            - alias: "All sensors + Custom Group all sensors with no action button"
+                              conditions:
+                                - "{{ notify_action_buttons == 'disabled_notify_action_buttons' }}"
+                              sequence:
+                                - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                  data:
+                                    title: !input notify_title
+                                    message: "{{all_sensors|replace(', ', '\n')}}{{'\n'}}{{all_sensors_custom_group|replace(', ', '\n')}}"
+                                    data:
+                                      sticky: "true"
+                            - alias: "All sensors + Custom Group all sensors with action button"
+                              conditions:
+                                - "{{ notify_action_buttons != 'disabled_notify_action_buttons' }}"
+                              sequence:
+                                - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                  data:
+                                    title: !input notify_title
+                                    message: "{{all_sensors|replace(', ', '\n')}}{{'\n'}}{{all_sensors_custom_group|replace(', ', '\n')}}"
+                                    data:
+                                      sticky: "true"
+                                      actions:
+                                        - action: "{{ action_button_to_do }}"
+                                          title: !input action_button_to_do
+                                        - action: "{{ action_button_cancel }}"
+                                          title: !input action_button_cancel
+                      - alias: "No sensors have been found"
+                        conditions:
+                          - "{{ not (all_sensors != '''''') and not (all_sensors_custom_group != '''''') }}"
+                          - "{{ include_easy_notify == 'enable_easy_okay_notify' }}"
+                        sequence:
+                          - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                            data:
+                              title: !input notify_title
+                              message: !input notify_okay_message
+                              data:
+                                sticky: "true"
+                - alias: "Sensors"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ notify_message == 'sensors' }}"
+                  sequence:
+                    - choose:
+                      - alias: "Sensors have been found"
+                        conditions:
+                          - "{{ (sensors != '''') or (sensors_custom_group != '''') }}"
+                        sequence:
+                          - choose:
+                            - alias: "All sensors + Custom Group sensors with no action button"
+                              conditions:
+                                - "{{ notify_action_buttons == 'disabled_notify_action_buttons' }}"
+                              sequence:
+                                - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                  data:
+                                    title: !input notify_title
+                                    message: "{{sensors|replace(', ', '\n')}}{{'\n'}}{{sensors_custom_group|replace(', ', '\n')}}"
+                                    data:
+                                      sticky: "true"
+                            - alias: "All sensors + Custom Group sensors with action button"
+                              conditions:
+                                - "{{ notify_action_buttons != 'disabled_notify_action_buttons' }}"
+                              sequence:
+                                - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                  data:
+                                    title: !input notify_title
+                                    message: "{{sensors|replace(', ', '\n')}}{{'\n'}}{{sensors_custom_group|replace(', ', '\n')}}"
+                                    data:
+                                      sticky: "true"
+                                      actions:
+                                        - action: "{{ action_button_to_do }}"
+                                          title: !input action_button_to_do
+                                        - action: "{{ action_button_cancel }}"
+                                          title: !input action_button_cancel
+                      - alias: "No sensors have been found"
+                        conditions:
+                          - "{{ not (sensors != '''') and not (sensors_custom_group != '''') }}"
+                          - "{{ include_easy_notify == 'enable_easy_okay_notify' }}"
+                        sequence:
+                          - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                            data:
+                              title: !input notify_title
+                              message: !input notify_okay_message
+                              data:
+                                sticky: "true"
+                - alias: "All unavailable sensors"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ notify_message == 'unavailable_sensors' }}"
+                  sequence:
+                    - choose:
+                      - alias: "Sensors have been found"
+                        conditions:
+                          - "{{ (unavailable_sensors != '') or (unavailable_sensors_custom_group != '') }}"
+                        sequence:
+                          - choose:
+                            - alias: "All sensors + Custom Group unavailable sensors with no action button"
+                              conditions:
+                                - "{{ notify_action_buttons == 'disabled_notify_action_buttons' }}"
+                              sequence:
+                                - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                  data:
+                                    title: !input notify_title
+                                    message: "{{unavailable_sensors|replace(', ', '\n')}}{{'\n'}}{{unavailable_sensors_custom_group|replace(', ', '\n')}}"
+                                    data:
+                                      sticky: "true"
+                            - alias: "All sensors + Custom Group unavailable sensors with action button"
+                              conditions:
+                                - "{{ notify_action_buttons != 'disabled_notify_action_buttons' }}"
+                              sequence:
+                                - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                  data:
+                                    title: !input notify_title
+                                    message: "{{unavailable_sensors|replace(', ', '\n')}}{{'\n'}}{{unavailable_sensors_custom_group|replace(', ', '\n')}}"
+                                    data:
+                                      sticky: "true"
+                                      actions:
+                                        - action: "{{ action_button_to_do }}"
+                                          title: !input action_button_to_do
+                                        - action: "{{ action_button_cancel }}"
+                                          title: !input action_button_cancel
+                      - alias: "No sensors have been found"
+                        conditions:
+                          - "{{ not (unavailable_sensors != '') and not (unavailable_sensors_custom_group != '') }}"
+                          - "{{ include_easy_notify == 'enable_easy_okay_notify' }}"
+                        sequence:
+                          - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                            data:
+                              title: !input notify_title
+                              message: !input notify_okay_message
+                              data:
+                                sticky: "true"
+  - choose:
+    - alias: "Check if the To-Do action button is enabled"
+      conditions:
+        - condition: template
+          value_template: "{{(notify_action_buttons == 'enable_to_do_list_button') or (notify_action_buttons == 'enable_to_do_list_button_and_confirmation')}}"
+      sequence:
+        - alias: "Wait for a response from the action buttons"
+          wait_for_trigger:
+            - platform: event
+              event_type: mobile_app_notification_action
+              event_data:
+                action: "{{ action_button_to_do }}"
+            - platform: event
+              event_type: mobile_app_notification_action
+              event_data:
+                action: "{{ action_button_cancel }}"
+        - choose:
+          - alias: "Check if confirmation message is disabled"
+            conditions:
+              - condition: template
+                value_template: "{{ notify_action_buttons == 'enable_to_do_list_button' }}"
+            sequence:
+              - if:
+                  - alias: "Confirmation from the actions buttons"
+                    condition: template
+                    value_template: "{{ wait.trigger.idx is defined }}"
+                then:
+                  - alias: "Perform the action button selected action"
+                    choose:
+                      - conditions: "{{ wait.trigger.event.data.action == action_button_to_do }}"
+                        sequence:
+                          - service: todo.add_item
+                            metadata: {}
+                            data:
+                              item: !input to_do_task_title
+                              description: "{{all_sensors|replace(', ', '\n')}}"
+                            target:
+                              entity_id: !input to_do_list
+                      - conditions: "{{ wait.trigger.event.data.action == action_button_cancel }}"
+                        sequence:
+          - alias: "Check if confirmation message is enabled"
+            conditions:
+              - condition: template
+                value_template: "{{ notify_action_buttons == 'enable_to_do_list_button_and_confirmation' }}"
+            sequence:
+              - if:
+                  - alias: "Confirmation from the actions buttons"
+                    condition: template
+                    value_template: "{{ wait.trigger.idx is defined }}"
+                then:
+                  - alias: "Perform the action button selected action"
+                    choose:
+                      - conditions: "{{ wait.trigger.event.data.action == action_button_to_do }}"
+                        sequence:
+                          - alias: Add task to To-Do list
+                            service: todo.add_item
+                            metadata: {}
+                            data:
+                              item: !input to_do_task_title
+                              description: "{{to_do_message}}"
+                            target:
+                              entity_id: !input to_do_list
+                          - alias: Send a notification to each device
+                            repeat:
+                              for_each: !input notify_device
+                              sequence:
+                                - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                  data:
+                                    title: !input action_button_confirmation_title
+                                    message: !input action_button_confirmation_message
+                                    data:
+                                      url: "/todo?entity_id={{to_do_list}}"
+                                      clickAction: "/todo?entity_id={{to_do_list}}"
+                      - conditions: "{{ wait.trigger.event.data.action == action_button_cancel }}"
+                        sequence:
+                          - alias: Send a notification to each device
+                            repeat:
+                              for_each: !input notify_device
+                              sequence:
+                                - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                  data:
+                                    title: !input action_button_confirmation_title
+                                    message: !input cancel_action_button_confirmation_message

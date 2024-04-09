@@ -1,0 +1,162 @@
+action: fire-dom-event
+browser_mod:
+  service: browser_mod.popup
+  data:
+    title: Fvicente
+    style: >
+      --popup-max-width: calc(385px + 385px + 300px + 50px);
+      --ha-card-border-radius: 10;
+      ha-card {
+                  background: none  !important;
+                  box-shadow: none !important;
+                  border: none !important;
+                  padding: 0 !important;
+                }
+            
+    card_mod:
+      style:
+        layout-card:
+          $grid-layout$:
+            # card divider border
+            .: |
+              #root {
+                  margin: -24px 0 !important;
+              }
+            hui-entities-card:
+              $: |
+                .card-content {
+                  padding: var(--tablet-popup-content-padding);
+                  padding-bottom: 1em;
+                }
+                ha-card {
+                  border-right: 1.5px solid rgba(0, 0, 0, 0.2);
+                  border-radius: 10;
+                  transition: none;
+                }
+                /* portrait */
+                @media screen and (max-width: 1200px) {
+                  ha-card {
+                    border-right: none;
+                    border-bottom: 1.5px solid rgba(0, 0, 0, 0.2);
+                  }
+                }
+              $hui-horizontal-stack-card:
+                # horizontal bottom buttons
+                $: |
+                  #root {
+                    justify-content: space-evenly;
+                    margin-top: 1.7em;
+                    max-width: 82vw; /* iphonex */
+                  }
+    content:
+
+      type: custom:layout-card
+      layout_type: custom:grid-layout
+      layout:
+        margin: 0
+        grid-template-columns: 385px 300px 385px
+        grid-template-rows: 1fr
+        grid-template-areas: |
+          "information  status map"
+      cards:
+
+        ### INFORMATION
+        - type: vertical-stack
+          view_layout:
+            grid-area: information
+          cards:
+            - type: entities
+              card_mod:
+                class: content
+              entities:
+                - entity: person.fvicente
+                  secondary_info: last-changed
+
+            - type: history-graph
+              card_mod:
+                style: |
+                  ha-card > div {
+                    padding: 0 2em 1em 1.6em !important;
+                  }
+              entities:
+                - entity: person.fvicente
+
+            - type: glance
+              card_mod:
+                style: |
+                  ha-card > div {
+                    padding: 1em 1.5em 0.2em 1em !important;
+                    box-sizing: content-box;
+                  }
+              show_state: false
+              entities:
+  
+                - entity: device_tracker.fvicente_phone
+                  name: Wifi
+                  icon: mdi:wifi
+                  card_mod:
+                    style: &state |
+                      state-badge {
+                        color: {{ is_state(config.entity, 'home') | iif('#3182b7', '#3c3f3f') }};
+                      }
+
+                - entity: device_tracker.fvicente_phone
+                  name: Bluetooth
+                  icon: mdi:bluetooth
+                  card_mod:
+                    style: *state
+
+                - entity: device_tracker.fvicente_phone
+                  name: Position
+                  icon: cil:iphone-modern
+                  card_mod:
+                  style: *state
+
+            - type: custom:mod-card
+              card_mod:
+                style:
+                  hui-horizontal-stack-card$: |
+                    #root {
+                      justify-content: space-evenly !important;
+                      padding: var(--tablet-popup-button-padding);
+                    }
+              card:
+                type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: Encontrar mi teléfono
+                    icon: mdi:volume-high
+                    template: icon_name
+                    tap_action:
+                      action: call-service
+                      service: notify.mobile_app_fvicente_phone
+                      service_data:
+                        title: "Hey"
+                        message: "Aquí Estoy!"
+                        data:
+                          push:
+                            sound:
+                              name: findmy.wav
+                              critical: 1
+                              volume: 1
+                            
+
+        ### MAP
+        - type: custom:decluttering-card
+          template: map_template
+          variables:
+            - device_tracker: device_tracker.fvicente_phone
+
+        ###  STATE
+        - type: entities
+          view_layout:
+            grid-area: status
+          entities:
+            - entity: sensor.fvicente_phone_battery_level
+              name: Battery Level
+            - entity: sensor.fvicente_phone_battery_state
+              name: Battery State
+            - entity: sensor.fvicente_phone_last_update_trigger
+              name: Last Update Trigger
+            - entity: sensor.fvicente_phone_storage
+              name: Storage

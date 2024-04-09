@@ -1,0 +1,13 @@
+switch:
+  template:
+    - base
+    - circle
+    - loader
+  variables:
+    circle_input: >
+      [[[
+        if (entity) {
+          return "ON"
+        }
+      ]]]
+  

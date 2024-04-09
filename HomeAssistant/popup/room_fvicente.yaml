@@ -1,0 +1,70 @@
+action: fire-dom-event
+browser_mod:
+  service: browser_mod.popup
+  data:
+    title: Rooms
+    style: |
+      --popup-min-width: calc(880px);
+      --ha-card-border-radius: 0;
+
+    card_mod:
+      style:
+        layout-card:
+          $grid-layout$:
+            hui-entities-card:
+              $: |
+                .card-content {
+                  padding: var(--tablet-popup-content-padding);
+                  padding-bottom:2em;
+                }
+                ha-card {
+                  border-right: 1.5px solid rgba(0, 0, 0, 0.2);
+                  border-radius: 0;
+                  transition: none;
+                }
+    content:
+      type: vertical-stack
+      cards:
+
+        - type: grid
+          columns: 5
+          cards:
+
+            - type: custom:button-card
+              entity: 
+              name: Mariquita
+              template:
+                - light
+                - icon_hue
+
+            - type: custom:button-card
+              entity: 
+              name: Fvicente
+              tap_action: 
+                action: navigation
+                url_navigation: fvicente
+              template:
+                - light
+                - icon_hue
+
+            - type: custom:button-card
+              entity: 
+              name: Dayreth
+              template:
+                - light
+                - icon_hue
+
+            - type: custom:button-card
+              entity: 
+              name: Zahid
+              template:
+                - light
+                - icon_hue
+
+            - type: custom:button-card
+              entity: 
+              name: Ethan
+              template:
+                - light
+                - icon_hue
+

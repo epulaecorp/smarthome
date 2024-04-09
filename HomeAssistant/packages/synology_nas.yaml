@@ -1,0 +1,34 @@
+
+template:
+  - sensor:
+      - unique_id: domain_counter
+        state: >
+          {{ states | count }}
+        attributes:
+          automation: >
+            {{ states.automation | count }}
+          binary_sensor: >
+            {{ states.binary_sensor | count }}
+          device_tracker: >
+            {{ states.device_tracker | count }}
+          light: >
+            {{ states.light | count }}
+          media_player: >
+            {{ states.media_player | count }}
+          sensor: >
+            {{ states.sensor | count }}
+          switch: >
+            {{ states.switch | count }}
+          other: >
+            {% set exclude = this.attributes | list %}
+            {{ states | rejectattr('domain', 'in', exclude) | list | count }}
+
+monitor_docker:
+  - name: Docker
+    monitored_conditions:
+      - version
+      - containers_running
+      - containers_paused
+      - containers_stopped
+      - containers_total
+    scan_interval: 900

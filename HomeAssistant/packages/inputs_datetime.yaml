@@ -1,0 +1,20 @@
+input_datetime:
+
+  alarm_echo_sala:
+    name: 'Alarm Echo Sala'
+    has_date: true 
+    has_time: true 
+    icon: mdi:clock-edit-outline
+
+  alarm_echo_recamara:
+    name: 'Alarm Echo Recamara'
+    has_date: true 
+    has_time: true 
+    icon: mdi:clock-edit-outline
+
+  alarm_echo_cocina:
+    name: 'Alarm Echo Cocina'
+    has_date: true 
+    has_time: true 
+    icon: mdi:clock-edit-outline
+      

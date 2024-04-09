@@ -1,0 +1,9 @@
+      #default
+      grid-gap: var(--custom-layout-card-padding)
+      grid-template-columns: repeat(4, 1fr) 0
+      grid-template-rows: 0 repeat(3, fit-content(100%)) 0
+      grid-template-areas: |
+        ".        .           .           .           ."
+        "sidebar  .           .           .           ."
+        "sidebar  devices1    devices2    devices3    ."
+        "sidebar  enviroment  enviroment  enviroment  ."

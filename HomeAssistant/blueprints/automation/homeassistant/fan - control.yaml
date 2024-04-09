@@ -1,0 +1,564 @@
+blueprint:
+  name: FAN - Temperature Control
+  description: >
+    # 🌡 Temperature Control Exhaust Fan
+    
+    **Version: 1.8**
+
+    **El proceso de automatización:**
+      - Cuando el sensor supera el valor establecido, enciende el ventilador.
+      - Cuando el sensor cae por debajo del valor establecido, apaga el ventilador.
+      - Tienes la opción de utilizar el tiempo de ejecución máximo.
+      - Tiene la opción de utilizar la "Velocidad del ventilador - Opción de apagado". Esto es útil para apagar ventiladores con diferentes velocidades.
+      - Tiene la opción de utilizar el "Bypass del sensor de disparo". Esto le permite agregar un interruptor para omitir manualmente el sensor de activación para que pueda usar el ventilador normalmente encendiéndolo y apagándolo manualmente.
+      - Tienes la opción de establecer una hora de inicio, una hora de finalización y seleccionar días de la semana. Esto solo permitirá que la automatización se ejecute entre los períodos de tiempo.
+      - Tienes la opción de ingresar en las condiciones globales que desees.
+      - Protección segura integrada para el reinicio de HA.
+    
+    Nota: Si enciende el ventilador manualmente y la automatización se ejecuta, el ventilador se apagará automáticamente. Se recomienda utilizar la opción "Desvío del sensor de activación" si desea mantener el ventilador encendido o apagado durante períodos de tiempo prolongados.
+    
+  domain: automation
+  input:
+    trigger_sensor:
+      name: Trigger Sensor *
+      description: El disparador puede ser cualquier sensor que desee que tenga un valor numérico.
+      selector:
+        entity:
+          filter:
+            domain: 
+              - sensor
+    entity_turn_on:
+      name: Fan Switch *
+      description: Ingrese el ventilador que desea encender. Puede ser cualquier interruptor que quieras.
+      selector:
+        target:
+          entity:
+            domain: 
+              - switch
+              - fan
+    include_entity_turn_off:
+      name: Use The Fan Speed - Switch Off Option (Optional)
+      description: A veces es necesario seleccionar una entidad diferente para encenderla y que el ventilador se apague.
+        Esto normalmente se usa cuando tienes un ventilador que tiene diferentes velocidades.
+      default: fan_speed_off_disabled
+      selector:
+        select:
+          options:
+            - label: Enable the fan speed - switch off option
+              value: "fan_speed_off_enabled"
+            - label: Disable the fan speed - switch off option
+              value: "fan_speed_off_disabled"
+    entity_turn_off:
+      name: Fan Speed - Switch Off Option (Optional)
+      description: Seleccione la entidad que apagará el ventilador.
+        NO seleccione las mismas entidades que se seleccionaron arriba en "Fan Switch" aquí, ya que la automatización no funcionará.
+      default: []
+      selector:
+        entity:
+          multiple: true
+          filter:
+            domain:
+              - switch
+              - fan
+    rising_value:
+      name: Rising Value
+      description: El valor creciente para encender el ventilador.
+      default: 20
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 0.5
+          unit_of_measurement: value
+    falling_value:
+      name: Falling Value
+      description: El valor descendente para apagar el ventilador.
+      default: 20
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 0.5
+          unit_of_measurement: value
+    include_maximum_run_time:
+      name: Use The Maximum Run Time Option (Optional)
+      description:  Este es el tiempo máximo de funcionamiento que el ventilador puede estar encendido una vez que se enciende y no se alcanza el valor de caída. 
+      default: disabled_maximum_run_time
+      selector:
+        select:
+          options:
+            - label: 1 - Enable the maximum run time
+              value: "enabled_maximum_run_time"
+            - label: Disable the maximum run time
+              value: "disabled_maximum_run_time"
+    maximum_run_time:
+      name: Maximum Run Time
+      description: Establezca el tiempo máximo de funcionamiento de su ventilador. Debe habilitar la opción anterior para que funcione.
+      default:
+        hours: 0
+        minutes: 0
+        seconds: 0
+      selector:
+        duration:
+    include_bypass:
+      name: Use The Trigger Sensor By-pass Option (Optional)
+      description: Seleccione habilitar o deshabilitar. Las tres opciones de habilitación permitirán el control manual de sus ventiladores.
+        Las tres opciones de habilitación son solo para seleccionar lo que debe suceder cuando enciende el bypass. 
+      default: bypass_disabled
+      selector:
+        select:
+          options:
+            - label: 1 - Enable the By-pass - Turn fan ON
+              value: "bypass_enabled_turn_on"
+            - label: 2 - Enable the By-pass - Turn fan OFF
+              value: "bypass_enabled"
+            - label: 3 - Enable the By-pass - Keep the current fan state
+              value: "bypass_enabled_stop"
+            - label: Disable the By-pass option
+              value: "bypass_disabled"
+    trigger_bypass:
+      name: Trigger Sensor By-pass
+      description: Seleccione un interruptor que omitirá el sensor de activación y hará que su ventilador funcione normalmente.
+        La entidad no se puede incluir en la selección "Fan Switch".
+      default: []
+      selector:
+        entity:
+    include_bypass_auto_off:
+      name: Use The By-pass Auto OFF Option (Optional)
+      description: Esto se utiliza cuando enciende el bypass y desea que se apague automáticamente en un retraso de tiempo establecido.
+        También se puede utilizar como temporizador para encender y apagar el ventilador si ha elegido utilizar "Habilitar el bypass - Encender el ventilador" arriba.
+      default: bypass_auto_off_disabled
+      selector:
+        select:
+          options:
+            - label: Enable the by-pass auto off option
+              value: "bypass_auto_off_enabled"
+            - label: Disable the by-pass auto off option
+              value: "bypass_auto_off_disabled"
+    bypass_auto_off_delay:
+      name: By-pass Auto OFF - Time Delay
+      description: Configure el retardo de tiempo de apagado automático del bypass. 
+      default: 60
+      selector:
+        number:
+          min: 1
+          max: 240
+          step: 1
+          unit_of_measurement: minutes
+    include_time:
+      name: Use The Time Options (Optional)
+      description: Utilice los valores de "Hora de inicio", "Hora de finalización" y "Días de la semana" para ejecutar la automatización solo entre los períodos de tiempo. 
+      default: time_disabled
+      selector:
+        select:
+          options:
+            - label: Enable the time options
+              value: "time_enabled"
+            - label: Disable the time options
+              value: "time_disabled"
+    after_time:
+      name: Start Time
+      description: Establezca la hora de inicio.
+      default: 00:00:00
+      selector:
+        time:
+    before_time:
+      name: End Time
+      description: Establezca la hora de finalización.
+      default: 00:00:00
+      selector:
+        time:
+    weekday_options:
+      name: Weekdays
+      description: Seleccione los días de la semana en los que desea que se ejecute la automatización. Debe seleccionar "Habilitar las opciones de tiempo" arriba para que funcionen las selecciones de días laborables.
+      default:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+        - sat
+        - sun
+      selector:
+        select:
+          multiple: true
+          mode: list
+          options:
+            - label: Monday
+              value: "mon"
+            - label: Tuesday
+              value: "tue"
+            - label: Wednesday
+              value: "wed"
+            - label: Thursday
+              value: "thu"
+            - label: Friday
+              value: "fri"
+            - label: Saturday
+              value: "sat"
+            - label: Sunday
+              value: "sun"
+    global_conditions:
+      name: Global Conditions
+      description: Ingrese las condiciones globales que le gustaría aplicar a la automatización.
+      default: []
+      selector:
+        condition:
+
+# If the temp rises above the set point again it will restart the automation.
+mode: restart
+max_exceeded: silent
+
+variables:
+  trigger_sensor: !input trigger_sensor
+  entity_turn_on: !input entity_turn_on
+  include_entity_turn_off: !input include_entity_turn_off
+  entity_turn_off: !input entity_turn_off
+  rising_value: !input rising_value
+  falling_value: !input falling_value
+  include_maximum_run_time: !input include_maximum_run_time
+  maximum_run_time: !input maximum_run_time
+  include_bypass: !input include_bypass
+  trigger_bypass: !input trigger_bypass
+  include_bypass_auto_off: !input include_bypass_auto_off
+  bypass_auto_off_delay: !input bypass_auto_off_delay
+  include_time: !input include_time
+  after_time: !input after_time
+  before_time: !input before_time
+  weekday_options: !input weekday_options
+  global_conditions: !input global_conditions
+
+trigger:
+  - platform: numeric_state
+    id: "t0"
+    entity_id: !input trigger_sensor
+    above: !input rising_value
+  - platform: time
+    id: "t1"
+    at: !input after_time
+  - platform: time
+    id: "t2"
+    at: !input before_time
+  - platform: state
+    id: "t3"
+    entity_id: !input trigger_bypass
+    from: "off"
+    to: "on"
+  - platform: state
+    id: "t4"
+    entity_id: !input trigger_bypass
+    from: "on"
+    to: "off"
+  - platform: homeassistant
+    id: "t5"
+    event: start
+
+# All Conditions
+condition:
+
+#Trigger conditions
+  - condition: or
+    conditions:
+      - condition: and # trigger on rising value is above set point
+        conditions:
+          - condition: numeric_state
+            entity_id: !input trigger_sensor
+            above: !input rising_value
+          - condition: trigger
+            id: 't0'
+      - condition: and # trigger by start of time & check rising value is above set point
+        conditions:
+          - condition: numeric_state
+            entity_id: !input trigger_sensor
+            above: !input rising_value
+          -  "{{ include_time == 'time_enabled' }}"
+          - condition: trigger
+            id: 't1'
+      - condition: and # trigger by end of time & check rising value is above set point
+        conditions:
+          - condition: numeric_state
+            entity_id: !input trigger_sensor
+            above: !input rising_value
+          -  "{{ include_time == 'time_enabled' }}"
+          - condition: trigger
+            id: 't2'
+      - condition: and # trigger by by-pass turning on
+        conditions:
+          - condition: trigger
+            id: 't3'
+          - "{{ (include_bypass == 'bypass_enabled_turn_on') or (include_bypass == 'bypass_enabled') or (include_bypass == 'bypass_enabled_stop') }}"
+      - condition: and # trigger by by-pass turning off
+        conditions:
+          - condition: trigger
+            id: 't4'
+          - "{{ (include_bypass == 'bypass_enabled') or (include_bypass == 'bypass_enabled_stop') or (include_bypass == 'bypass_enabled_turn_on') }}"
+      - condition: and # trigger by HA Restart & check if any fans are on or if the by-pass auto off is enabled
+        conditions:
+          - "{{ (expand(entity_turn_on.entity_id) | selectattr('state', '==', 'on') | list | count > 0) or ((include_bypass_auto_off == 'bypass_auto_off_enabled') and (states[trigger_bypass].state == 'on')) }}"
+          - condition: trigger
+            id: 't5'
+      - condition: and # trigger by HA Restart & check rising value is above set value
+        conditions:
+          - condition: numeric_state
+            entity_id: !input trigger_sensor
+            above: !input rising_value
+          - condition: trigger
+            id: 't5'
+
+# Check the By-pass
+  - condition: or
+    conditions:
+      - "{{ include_bypass == 'bypass_disabled' }}"
+      - "{{ trigger_bypass == [] }}"
+      - "{{ (include_bypass == 'bypass_enabled_turn_on') and (states[trigger_bypass].state == 'off') }}"
+      - "{{ (include_bypass == 'bypass_enabled') and (states[trigger_bypass].state == 'off') }}"
+      - "{{ (include_bypass == 'bypass_enabled_stop') and (states[trigger_bypass].state == 'off') }}"
+      - "{{ (include_bypass_auto_off == 'bypass_auto_off_enabled') and (states[trigger_bypass].state == 'off') }}"
+      - "{{ (include_bypass_auto_off == 'bypass_auto_off_enabled') and (states[trigger_bypass].state == 'on') and (trigger.id == 't5') }}"
+      - condition: trigger
+        id: 't3'
+
+# Check the time options
+  - condition: or
+    conditions:
+      - "{{ include_time == 'time_disabled' }}"
+      - condition: and
+        conditions:      
+        - condition: time
+          after: !input after_time
+          before: !input before_time
+          weekday: !input weekday_options
+        -  "{{ include_time == 'time_enabled' }}"
+      - condition: and
+        conditions:
+        - condition: time
+          weekday: !input weekday_options
+        - condition: trigger
+          id: 't2'
+
+# Global Conditions
+  - condition: and
+    conditions: !input global_conditions
+
+
+action:
+  - choose:
+    - alias: "End of time to turn fan off"
+      conditions:
+        - condition: trigger
+          id: 't2'
+      sequence:
+        - alias: "Turn off the entity"
+          service: homeassistant.turn_off
+          target: !input entity_turn_on
+        - choose:
+          - alias: "Check if the fan speed off is enabled"
+            conditions:
+              -  "{{ include_entity_turn_off == 'fan_speed_off_enabled' }}"
+            sequence:
+              - alias: "Fan speed off option"
+                service: homeassistant.turn_on
+                entity_id: !input entity_turn_off
+        - stop: "Stop the automation"
+    - alias: "By-pass is turned on  & check by-pass option - turn fan off"
+      conditions:
+        - condition: trigger
+          id: 't3'
+        - condition: template
+          value_template: "{{ include_bypass == 'bypass_enabled' }}"
+      sequence:
+        - alias: "Turn off the fan"
+          service: homeassistant.turn_off
+          target: !input entity_turn_on
+        - choose:
+          - alias: "Check if the fan speed off is enabled"
+            conditions:
+              -  "{{ include_entity_turn_off == 'fan_speed_off_enabled' }}"
+            sequence:
+              - alias: "Fan speed off option"
+                service: homeassistant.turn_on
+                entity_id: !input entity_turn_off
+        - alias: "Check by-pass settings and preform the correct action"
+          if:
+            - alias: "Check if the by-pass auto off is enabled"
+              condition: template
+              value_template: "{{ include_bypass_auto_off == 'bypass_auto_off_enabled' }}"
+          then:
+            - alias: "Wait the number of minutes set in the by-pass auto off time delay"
+              delay: 
+                minutes: !input bypass_auto_off_delay
+            - alias: "Turn off the by-pass"
+              service: homeassistant.turn_off
+              entity_id: !input trigger_bypass
+            - stop: "Stop the automation"
+          else:
+            - stop: "Stop the automation"
+    - alias: "By-pass is turned on  & check by-pass option - keep the current fan state"
+      conditions:
+        - condition: trigger
+          id: 't3'
+        - condition: template
+          value_template: "{{ include_bypass == 'bypass_enabled_stop' }}"
+      sequence:
+        - alias: "Check by-pass settings and preform the correct action"
+          if:
+            - alias: "Check if the by-pass auto off is enabled"
+              condition: template
+              value_template: "{{ include_bypass_auto_off == 'bypass_auto_off_enabled' }}"
+          then:
+            - alias: "Wait the number of minutes set in the by-pass auto off time delay"
+              delay: 
+                minutes: !input bypass_auto_off_delay
+            - alias: "Turn off the by-pass"
+              service: homeassistant.turn_off
+              entity_id: !input trigger_bypass
+            - stop: "Stop the automation"
+          else:
+            - stop: "Stop the automation"
+    - alias: "By-pass is turned off  & check if the sensor is below set value"
+      conditions:
+        - condition: trigger
+          id: 't4'
+        - condition: numeric_state
+          entity_id: !input trigger_sensor
+          below: !input falling_value
+      sequence:
+        - alias: "Turn off the fan"
+          service: homeassistant.turn_off
+          target: !input entity_turn_on
+        - choose:
+          - alias: "Check if the fan speed off is enabled"
+            conditions:
+              -  "{{ include_entity_turn_off == 'fan_speed_off_enabled' }}"
+            sequence:
+              - alias: "Fan speed off option"
+                service: homeassistant.turn_on
+                entity_id: !input entity_turn_off
+        - stop: "Stop the automation"
+    - alias: "Safe Guard when HA restarts"
+      conditions:
+        - condition: trigger
+          id: 't5'
+      sequence:
+        - alias: "Check automation and preform the correct action"
+          if:
+            - alias: "Check if the trigger sensor is on"
+              condition: numeric_state
+              entity_id: !input trigger_sensor
+              above: !input rising_value
+          then:
+            - alias: "We need something here for the IF to continue"
+              delay:
+                seconds: 1
+            - choose:
+                - alias: "Check if the by-pass auto off is enabled and by-pass is ON"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ (include_bypass_auto_off == 'bypass_auto_off_enabled') and (states[trigger_bypass].state == 'on') }}"
+                  sequence:
+                    - alias: "Wait the number of minutes set in the by-pass auto off time delay"
+                      delay: 
+                        minutes: !input bypass_auto_off_delay
+                    - alias: "Turn off the by-pass"
+                      service: homeassistant.turn_off
+                      entity_id: !input trigger_bypass
+                    - stop: "Stop the automation"
+          else:
+            - choose:
+                - alias: "Check if the by-pass auto off is enabled and by-pass is ON"
+                  conditions:
+                    - condition: template
+                      value_template: "{{ (include_bypass_auto_off == 'bypass_auto_off_enabled') and (states[trigger_bypass].state == 'on') }}"
+                  sequence:
+                    - alias: "Wait the number of minutes set in the by-pass auto off time delay"
+                      delay:
+                        minutes: !input bypass_auto_off_delay
+                    - alias: "Turn off the by-pass"
+                      service: homeassistant.turn_off
+                      entity_id: !input trigger_bypass
+                    - stop: "Stop the automation"
+            - alias: "Turn off the entity"
+              service: homeassistant.turn_off
+              target: !input entity_turn_on
+            - choose:
+              - alias: "Check if the fan speed off is enabled"
+                conditions:
+                  -  "{{ include_entity_turn_off == 'fan_speed_off_enabled' }}"
+                sequence:
+                  - alias: "Fan speed off option"
+                    service: homeassistant.turn_on
+                    entity_id: !input entity_turn_off
+            - stop: "Stop the automation"
+  - choose:
+    - alias: "Check if the fan speed off is enabled"
+      conditions:
+        -  "{{ include_entity_turn_off == 'fan_speed_off_enabled' }}"
+      sequence:
+        - alias: "Fan speed off option"
+          service: homeassistant.turn_off
+          entity_id: !input entity_turn_off
+  - choose:
+    - alias: "By-pass is enabled & check by-pass option - turn fan on"
+      conditions:
+        - condition: trigger
+          id: 't3'
+        - condition: template
+          value_template: "{{ include_bypass == 'bypass_enabled_turn_on' }}"
+      sequence:
+        - alias: "Check by-pass settings and preform the correct action"
+          if:
+            - alias: "Check if the by-pass auto off is enabled"
+              condition: template
+              value_template: "{{ include_bypass_auto_off == 'bypass_auto_off_enabled' }}"
+          then:
+            - alias: "Wait the number of minutes set in the by-pass auto off time delay"
+              delay: 
+                minutes: !input bypass_auto_off_delay
+            - alias: "Turn off the by-pass"
+              service: homeassistant.turn_off
+              entity_id: !input trigger_bypass
+            - stop: "Stop the automation"
+          else:
+            - stop: "Stop the automation"
+  - alias: "Turn on the entity"
+    service: homeassistant.turn_on
+    target: !input entity_turn_on
+
+  - choose:
+    - alias: "Check if the trigger is on and wait for it to go off"
+      conditions:
+        - condition: numeric_state
+          entity_id: !input trigger_sensor
+          above: !input falling_value
+        - "{{ include_maximum_run_time == 'disabled_maximum_run_time' }}"
+      sequence:
+        - alias: "Wait until sensor is below set value"
+          wait_for_trigger:
+            platform: numeric_state
+            entity_id: !input trigger_sensor
+            below: !input falling_value
+    - alias: "Check if the trigger is on and wait for it to go off"
+      conditions:
+        - condition: numeric_state
+          entity_id: !input trigger_sensor
+          above: !input falling_value
+        - "{{ include_maximum_run_time == 'enabled_maximum_run_time' }}"
+      sequence:
+        - alias: "Wait until sensor is below set value"
+          wait_for_trigger:
+            platform: numeric_state
+            entity_id: !input trigger_sensor
+            below: !input falling_value
+          timeout: !input maximum_run_time
+
+  - alias: "Turn off the entity"
+    service: homeassistant.turn_off
+    target: !input entity_turn_on
+  - choose:
+    - alias: "Check if the fan speed off is enabled"
+      conditions:
+        -  "{{ include_entity_turn_off == 'fan_speed_off_enabled' }}"
+      sequence:
+        - alias: "Fan speed off option"
+          service: homeassistant.turn_on
+          entity_id: !input entity_turn_off

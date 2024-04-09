@@ -1,0 +1,28 @@
+group:
+  fvicente_fans:
+    name: 'fvicente fans'
+    entities:
+      - fan.fvicente_fan
+      - fan.fvicente_wfan
+
+  fvicente_lights:
+    name: 'fvicente lights'
+    entities:
+      - light.fvicente
+      - light.fvicente_respaldo
+
+  fvicente_multimedia:
+    name: 'fvicente_multimedia'
+    entities:
+      - switch.fvicente_chromecast
+      - switch.fvicente_monitor
+
+  fvicente_all_devices:
+    name: 'fvicente_all_devices'
+    entities:
+      - fan.fvicente_fan
+      - fan.fvicente_wfan
+      - light.fvicente
+      - light.fvicente_respaldo
+      - switch.fvicente_chromecast
+      - switch.fvicente_monitor

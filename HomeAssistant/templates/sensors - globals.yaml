@@ -1,0 +1,80 @@
+  #.. Forecast ..#
+  - sensor:
+    
+    # ...Views... # 
+    - unique_id: sidebar
+      state: template
+      attributes:
+        time: >
+          {% set hours = now().strftime('%H') %}
+          {% set minutes = now().strftime('%M') %}
+          <span class="time">
+            {{ hours }}<span class="time-colon">:</span>{{ minutes }}
+          </span>
+        date: >
+          <font color='#6a7377'><b>
+          {% if strptime(states('sensor.date'), '%Y-%m-%d').day != None %}
+          {% set days = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'] %}
+          {% set months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+          'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'] %}
+            {{ days[now().weekday()] }} {{ strptime(states('sensor.date'), '%Y-%m-%d').day }} {{ months[now().month-1] }}
+          {% endif %}
+          </b></font>
+        holidays: >
+          <font color='orange'><b>
+            {% if states('calendar.festivos_en_mexico') == 'on' %}
+              {{ state_attr('calendar.festivos_en_mexico', 'message')}}
+            {% endif %}
+          </b></font>
+        birthday: >
+          <font color='orange'><b>
+            {% if states('calendar.birthdays') == 'on' %}
+              Felicidades {{ state_attr('calendar.birthdays', 'message')}} !
+            {% endif %}
+          </b></font>
+        greet: >
+          <b>
+          {% set time = now().hour %}        
+          {% if time  < 4 %} Buenas noches {{'\U0001F634'}}
+          {% elif time < 12 %} Buenos días {{'\u2615\uFE0F'}}
+          {% elif time < 19 %} Buenas tardes {{'\U0001F44B\U0001F3FB'}}
+          {% else %} Buenas noches {{'\U0001F44B\U0001F3FB'}}
+          {% endif %}
+          </b>
+    
+    # ...Forecast... #
+    - unique_id: "forecast_temperature"
+      name: "forecast_temperature"
+      unit_of_measurement: '°C'
+      state: "{{ state_attr('weather.openweathermap', 'temperature') }}"
+      device_class: temperature
+
+    - unique_id: "forecast_humidity"
+      name: "forecast_humidity"
+      unit_of_measurement: '%'
+      state: "{{ state_attr('weather.openweathermap', 'humidity') }}"
+      device_class: humidity
+    
+    # ...Alarms...#
+    - unique_id: 'alarm echo sala'
+      name: 'Alarm Echo Sala'
+      state: >
+        {{ (states('input_datetime.alarm_echo_sala')| as_datetime | as_local).isoformat() }}
+      icon: mdi:clock-time-five
+      device_class: timestamp
+
+    - unique_id: 'alarm echo recamara'
+      name: 'Alarm Echo Recamara'
+      state: >
+        {{ (states('input_datetime.alarm_echo_recamara') | as_datetime | as_local).isoformat() }}
+      icon: mdi:clock-time-five
+      device_class: timestamp
+
+    - unique_id: 'sensor alarm echo cocina'
+      name: 'Alarm Echo Cocina'
+      state: >
+        {{ (states('input_datetime.alarm_echo_cocina')| as_datetime | as_local).isoformat() }}
+      icon: mdi:clock-time-five
+      device_class: timestamp
+
+

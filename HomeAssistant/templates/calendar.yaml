@@ -1,0 +1,16 @@
+  - binary_sensor:
+      - unique_id: calendar_pendientes
+        name: calendar_pendientes
+        state: >
+          {% set next_calendar_event = (as_timestamp(state_attr('calendar.pendientes', 'start_time'))) | timestamp_custom('%Y-%m-%d', true) %}
+          {% set today = as_timestamp(now()) | timestamp_custom('%Y-%m-%d', true) %}
+          {% set tomorrow = (as_timestamp(now())+ (43200)) | timestamp_custom('%Y-%m-%d', true) %}
+          {{ next_calendar_event == today}} 
+
+  - sensor:
+      - unique_id: weekday
+        name: weekday
+        state: >
+          {% set today = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'] %}
+          {{ today[now().weekday()] }}
+  
