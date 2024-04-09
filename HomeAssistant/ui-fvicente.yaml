@@ -1,0 +1,171 @@
+button_card_templates: 
+  !include_dir_merge_named button_card_templates
+
+views:
+  # Home
+  - type: custom:grid-layout
+    layout_type: custom:grid-layout
+    title: fvicente
+    icon: mdi:home
+    layout:
+      #default
+      grid-gap: var(--custom-layout-card-padding)
+      grid-template-columns: 1fr repeat(1, 1fr) 1fr
+      grid-template-rows: 0 repeat(3, 1fr) 0
+      grid-template-areas: |
+        ".  .         ."
+        ".  devices   ."
+        ".  tasks     ."
+        ".  sensors   ."
+      mediaquery:
+        #phone
+        "(max-width: 800px)":
+          grid-gap: calc(var(--custom-layout-card-padding) * 1.7)
+          grid-template-columns: 0 repeat(1, 1fr) 0
+          grid-template-rows: repeat(3, 1fr)
+          grid-template-areas: |
+            ".  devices ."
+            ".  tasks   ."
+            ".  sensors ."
+    cards:
+      - type: grid
+        title: Fvicente Room
+        view_layout:
+          grid-area: devices
+        columns: 1
+        cards:
+          - type: custom:swipe-card
+            parameters:
+              parameters: null
+              roundLengths: true
+              effect: coverflow
+              speed: 650
+              spaceBetween: 20
+              threshold: 7
+              coverflowEffect:
+                rotate: 80
+                depth: 300
+            cards:
+              - type: grid
+                columns: 3
+                cards:
+                  # Luz
+                  - type: custom:button-card
+                    entity: light.fvicente
+                    name: Luz
+                    template:
+                      - switch
+                      - icon_hue
+                  # Respaldo    
+                  - type: custom:button-card
+                    entity: light.fvicente_respaldo
+                    name: Respaldo
+                    template:
+                      - switch
+                      - icon_spot
+                  # Ventilador
+                  - type: custom:button-card
+                    entity: fan.fvicente_fan
+                    name: Ventilador
+                    template:
+                      - switch
+                      - icon_ventilador
+                  # Ventilador de ventana
+                  - type: custom:button-card
+                    entity: switch.fvicente_wfan_switch
+                    name: WFan
+                    template:
+                      - switch
+                      - icon_ventilador
+                  # Monitor
+                  - type: custom:button-card
+                    entity: switch.fvicente_monitor
+                    name: Monitor
+                      #double_tap_action: !include popup/studio_monitorer.yaml
+                    template:
+                      - switch
+                      - icon_tv
+                  # Chromecast
+                  - type: custom:button-card
+                    entity: switch.fvicente_chromecast
+                    name: Chomecast                      #double_tap_action: !include popup/studio_monitorer.yaml
+                    template:
+                      - switch
+                      - icon_chrome
+
+              - type: grid
+                columns: 3
+                cards:
+                  # Phone Charger
+                  - type: custom:button-card
+                    entity: switch.fvicente_phone_charger
+                    name: Phone
+                    template:
+                      - switch
+                      - icon_charger
+                  # Laptop Charger
+                  - type: custom:button-card
+                    entity: switch.fvicente_laptop_charger
+                    name: Laptop
+                    template:
+                      - switch
+                      - icon_charger
+                  # Auxiliar Charger
+                  - type: custom:button-card
+                    entity: switch.fvicente_auxiliar_charger
+                    name: Auxiliar
+                    template:
+                      - switch
+                      - icon_charger
+
+
+#      - type: grid
+#        view_layout:
+#          grid-area: tasks
+#        columns: 1
+#        cards:
+#          - type: conditional
+#            conditions:
+#              - condition: state
+#                entity: binary_sensor.calendar_pendientes
+#                state: "on"
+#            card:
+#              type: custom:atomic-calendar-revive
+#              name: "Pendientes:"
+#              maxDaysToShow: 1
+#              showProgressBar: false
+#              showEventDate: false
+#              showAllDayHours: false
+#              entities:
+#                - entity: calendar.pendientes
+#                  color: orange
+
+      - type: grid
+        title: sensors
+        view_layout:
+          grid-area: tasks
+        columns: 1
+        cards:
+
+          - type: grid
+            columns: 1
+            cards:
+              - type: custom:apexcharts-card
+                graph_span: 24h
+                show:
+                  last_updated: true
+                header:
+                  show: true
+                  show_states: true
+                  title: Temperature
+                series:
+                  - entity: sensor.fvicente_temperature
+                    type: line
+                    color: steelblue
+                    group_by:
+                      func: last
+                      duration: 15m
+                    stroke_width: 2.
+                    show:
+                      extremas: true
+

@@ -1,0 +1,47 @@
+  
+  smart_home:
+    locale: es-MX
+    endpoint: https://api.amazonalexa.com/v3/events
+    client_id: amzn1.ask.skill.e0a27479-8539-4f9a-ba12-bb128457a597
+    client_secret: Pa$$w0rd
+    filter:
+      include_entities:
+        #--- Luces ...#
+        - light.fvicente
+        - light.fvicente_respaldo
+        #... Ventiladores ...#
+        - fan.fvicente_fan
+        #... Televisión ...#
+        - switch.fvicente_chromecast
+        - switch.fvicente_monitor
+        #... Especiales ...#
+        - input_boolean.sleep_interruption
+        #... Chargers ...#
+        - switch.fvicente_auxiliar_charger
+#      include_entity_globs:
+#        - binary_sensor.*_motion
+#      include_domains:
+#        - switch
+#      exclude_entities:
+#        - switch.outside
+    
+    entity_config:
+      
+      light.fvicente:
+        name: "Mi Luz"
+      light.fvicente_respaldo:
+        name: "Mi Respaldo"
+
+      fan.fvicente_fan:
+        name: "Mi Ventilador"
+
+      switch.fvicente_monitor:
+        name: "Mi Monitor"
+      switch.fvicente_chromecast:
+        name: "Mi Televisión"
+
+      switch.fvicente_auxiliar_charger:
+        name: "Mi Cargador"
+
+      input_boolean.sleep_interruption:
+        name: "sleep interruption"

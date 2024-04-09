@@ -1,45 +1,245 @@
-- id: '1705879353666'
-  alias: LuzCuerto
-  description: ''
+- id: '1699476318512'
+  alias: FVICENTE - TV
+  description: Turn ON/OFF monitor with Chromecast
   trigger:
-  - type: motion
-    platform: device
-    device_id: 06d419b301262753b5efa252ef20f9c7
-    entity_id: 4cba8d6bd46284b6268feddbeb5ea7a1
-    domain: binary_sensor
-    id: detected
-  - type: no_motion
-    platform: device
-    device_id: 06d419b301262753b5efa252ef20f9c7
-    entity_id: 4cba8d6bd46284b6268feddbeb5ea7a1
-    domain: binary_sensor
-    id: clear
+  - alias: Chromecast ON
+    platform: state
+    entity_id:
+    - remote.fvicente_tv
+    from: 'off'
+    to: 'on'
+    id: Turn ON Chromecast
+  - alias: Chromecast OFF
+    platform: state
+    entity_id:
+    - remote.fvicente_tv
+    from: 'on'
+    to: 'off'
+    id: Turn OFF Chromecast
   condition: []
   action:
-  - choose:
+  - alias: Chromecast ON / OFF
+    choose:
     - conditions:
       - condition: trigger
         id:
-        - detected
+        - Turn ON Chromecast
       sequence:
       - service: switch.turn_on
-        metadata: {}
         data: {}
         target:
-          entity_id: switch.room2_luz_room2_luz
+          entity_id: switch.fvicente_monitor
+      - service: media_player.volume_set
+        metadata: {}
+        data:
+          volume_level: 0.75
+        target:
+          device_id: fb289c0c16ea235873fa897462835efa
+      - service: media_player.select_source
+        metadata: {}
+        data:
+          source: fvicente_tv
+        target:
+          entity_id: media_player.echo_recamara
+      alias: 'ON'
     - conditions:
       - condition: trigger
         id:
-        - clear
+        - Turn OFF Chromecast
       sequence:
-      - delay:
-          hours: 0
-          minutes: 5
-          seconds: 0
-          milliseconds: 0
       - service: switch.turn_off
-        metadata: {}
         data: {}
         target:
-          entity_id: switch.room2_luz_room2_luz
+          entity_id: switch.fvicente_monitor
+      - service: media_player.volume_set
+        metadata: {}
+        data:
+          volume_level: 0.25
+        target:
+          device_id: fb289c0c16ea235873fa897462835efa
+      alias: 'OFF'
+  mode: single
+- id: '1704934376320'
+  alias: FVICENTE - home leave
+  description: ''
+  trigger:
+  - platform: zone
+    entity_id: person.fvicente
+    zone: zone.home
+    event: leave
+  condition: []
+  action:
+  - service: script.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: script.fvicente_home_leave
+  mode: single
+- id: '1704934606210'
+  alias: FVICENTE - home arrive
+  description: ''
+  trigger:
+  - platform: zone
+    entity_id: person.fvicente
+    zone: zone.home
+    event: enter
+  condition:
+  - condition: sun
+    before: sunrise
+    after: sunset
+  action:
+  - service: script.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: script.fvicente_home_arrive
+  mode: single
+- id: '1707077020260'
+  alias: Reminders - Happy Birthday
+  description: ''
+  trigger:
+  - platform: calendar
+    event: start
+    offset: 0:0:0
+    entity_id: calendar.birthdays
+  condition: []
+  action:
+  - service: notify.alexa_media_echo_recamara
+    metadata: {}
+    data:
+      title: Feliz Cumpleaños!
+      message: Felicidades
+  mode: single
+- id: '1707273663688'
+  alias: FVICENTE - wakeup
+  description: ''
+  use_blueprint:
+    path: homeassistant/lights - wakeup.yaml
+    input:
+      manual_time: '17:41:00'
+      light_entity: light.fvicente
+      presence_sensor: binary_sensor.fvicente_in_home
+      effect_duration: 5
+      end_brightness: 255
+      timestamp_sensor: sensor.alarm_echo_recamara
+- id: '1707698876630'
+  alias: FVICENTE - Movie Time
+  description: ''
+  use_blueprint:
+    path: homeassistant/lights - movie_time.yaml
+    input:
+      trigger_entities:
+      - media_player.fvicente_tv
+      include_sun: sun_enabled
+      app_attribute:
+      - Prime Video
+      - Plex
+      light_switch:
+        entity_id:
+        - binary_sensor.fvicente_movie_mode
+      include_start_turn_off: enable_start_turn_off
+      off_light_switch:
+        entity_id:
+        - light.fvicente
+        - light.fvicente_respaldo
+      off_include_light_control:
+      - use_transition
+      off_light_transition_off: 2
+      include_intermission: intermission_enable
+      intermission_light_switch:
+        entity_id: light.fvicente
+      intermission_include_light_control:
+      - use_brightness
+      - use_colour_temperature
+      - use_transition
+      end_include_light_control: []
+      trigger_on_state:
+      - playing
+      time_delay: 1.5
+      trigger_off_state:
+      - idle
+      include_end_turn_on: disable_end_turn_on
+      include_light_control: []
+- id: '1708389440992'
+  alias: NOTIFICATIONS - Garbage
+  description: ''
+  use_blueprint:
+    path: homeassistant/calendar - notifications.yaml
+    input:
+      calendar: calendar.garbage
+      include_calendar_trigger: disable_key_word
+      include_start_notify: enable_start_notify_options
+      start_notify_device:
+      - 3bfd4bb2ffe977888371f72bfe976eec
+      include_end_notify: enable_end_notify_options
+      end_notify_device:
+      - 3bfd4bb2ffe977888371f72bfe976eec
+      global_conditions:
+      - condition: state
+        entity_id: binary_sensor.fvicente_in_home
+        state: 'on'
+      include_start_action_button_confirmation: disable_start_action_button_confirmation
+- id: '1708472434293'
+  alias: FVICENTE - Laptop Charger
+  description: ''
+  use_blueprint:
+    path: homeassistant/device - charger.yaml
+    input:
+      end_bedtime: 05:00:00
+      battery: sensor.fvicente_laptop_battery
+      person: person.fvicente
+      target_switch: switch.fvicente_laptop_charger
+      start_bedtime: '22:00:00'
+      presence_sensor: binary_sensor.fvicente_in_home
+- id: '1708472579359'
+  alias: FVICENTE - Phone Charger
+  description: ''
+  use_blueprint:
+    path: homeassistant/device - charger.yaml
+    input:
+      end_bedtime: 05:00:00
+      battery: sensor.fvicente_phone_battery_level
+      person: person.fvicente
+      target_switch: switch.fvicente_phone_charger
+      start_bedtime: '22:00:00'
+      presence_sensor: binary_sensor.fvicente_in_home
+- id: '1708775414430'
+  alias: FVICENTE - Auxiliar Charger AutoOFF
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - switch.fvicente_auxiliar_charger
+    from: 'off'
+    to: 'on'
+  condition: []
+  action:
+  - delay:
+      hours: 1
+      minutes: 0
+      seconds: 0
+      milliseconds: 0
+  - service: switch.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.fvicente_auxiliar_charger
+  mode: single
+- id: '1710383431048'
+  alias: FVICENTE - alexa_next_alarm
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.echo_recamara_next_alarm
+    attribute: status
+  condition: []
+  action:
+  - service: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.alarm_echo_recamara
+    data_template:
+      datetime: "{% set x = states('sensor.echo_recamara_next_alarm') %} {% if x not
+        in ['unavailable', 'none', 'unknown'] %} \n  {{ as_timestamp(states('sensor.echo_recamara_next_alarm'))|timestamp_custom('%Y-%m-%d
+        %H:%M:00') }}\n{%else%}\n  {{ \"1977-04-13 05:04:20\" }}\n{% endif %}\n"
   mode: single

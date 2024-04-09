@@ -1,11 +1,129 @@
+homeassistant:
+  packages: !include_dir_named packages
+  customize_domain:
+    automation:
+      initial_state: false
+  allowlist_external_dirs:
+    - /config
+
+# Code automations
+automation manual: !include_dir_merge_list automations/
+# UI Automations
+automation ui: !include automations.yaml
+
+#... Helpers ...#
+script: 
+  !include scripts.yaml
+scene: 
+  !include scenes.yaml
+
+#mqtt:
+#  sensor: !include sensors.yaml
+#  binary_sensor: !include binary_sensors.yaml
 
 # Loads default set of integrations. Do not remove.
 default_config:
+#template: !include sidebar.yaml
+template: !include_dir_merge_list templates
+
+lovelace:
+  mode: yaml
+  resources:
+    [
+      { url: /hacsfiles/tabbed-card/tabbed-card.js,                                 type: module },
+      { url: /hacsfiles/vertical-stack-in-card/vertical-stack-in-card.js,           type: module },
+      { url: /hacsfiles/apexcharts-card/apexcharts-card.js,                         type: module },
+      { url: /hacsfiles/bar-card/bar-card.js,                                       type: module },
+      { url: /hacsfiles/button-card/button-card.js,                                 type: module },
+      { url: /hacsfiles/custom-icons/custom-icons.js,                               type: module },
+
+      { url: /hacsfiles/lovelace-layout-card/layout-card.js,                        type: module },
+      { url: /hacsfiles/lovelace-card-mod/card-mod.js,                              type: module },
+      { url: /hacsfiles/lovelace-hui-element/hui-element.js,                        type: module },
+      { url: /hacsfiles/lovelace-more-info-card/more-info-card.js,                  type: module },
+      { url: /hacsfiles/lovelace-mushroom/mushroom.js,                              type: module },
+      { url: /hacsfiles/lovelace-slider-entity-row/slider-entity-row.js,            type: module },
+      { url: /hacsfiles/lovelace-auto-entities/auto-entities.js,                    type: module },
+      { url: /hacsfiles/lovelace-state-switch/state-switch.js,                      type: module },
+
+      { url: /hacsfiles/stack-in-card/stack-in-card.js,                             type: module },
+      { url: /hacsfiles/mini-graph-card/mini-graph-card-bundle.js,                  type: module },
+      { url: /hacsfiles/swipe-card/swipe-card.js,                                   type: module },
+      { url: /hacsfiles/spotify-card/spotify-card.js,                               type: module },
+      { url: /hacsfiles/scheduler-card/scheduler-card.js,                           type: module },
+      { url: /hacsfiles/thermal_comfort_icons/thermal_comfort_icons.js,             type: module },
+      { url: /hacsfiles/Bubble-Card/bubble-card.js,                                 type: module },
+      { url: /hacsfiles/android-tv-card/android-tv-card.min.js,                     type: module },
+      { url: /hacsfiles/battery-state-card/battery-state-card.js,                   type: module },
+      { url: /hacsfiles/clock-weather-card/clock-weather-card.js,                   type: module },
+      { url: /hacsfiles/atomic-calendar-revive/atomic-calendar-revive.js,           type: module },
+      { url: /hacsfiles/decluttering-card/decluttering-card.js,                     type: module },
+
+      { url: /hacsfiles/TodoIst-Task-List/todoist-task-list.js,                     type: module },
+
+      { url: '/local/vertical-stack-in-card.js?v=0.4.4',                            type: js },
+      { url: '/local/marked.min.js?v=4.3.0',                                        type: module },
+      { url: '/local/vanilla-tilt.min.js?v=1.8.0',                                  type: module },
+      { url: '/local/browser_mod_icon.js?v=0.5',                                    type: module },
+      { url: '/local/mini-graph-card-bundle.js?v=0.12.0',                           type: module },
+      { url: '/local/fonts.css?v=2.1',                                              type: css }
+    ]
+  dashboards:
+#    lovelace-main:
+#      mode: yaml
+#      filename: ui-lovelace.yaml
+#      title: Main
+#      icon: mdi:overscan
+#      show_in_sidebar: true
+#      require_admin: true
+    lovelace-fvicente:
+      mode: yaml
+      filename: ui-fvicente.yaml
+      title: fvicente
+      icon: mdi:cellphone-cog
+      show_in_sidebar: true
+      require_admin: false
 
 # Load frontend themes from the themes folder
 frontend:
+  extra_module_url:
+    - /hacsfiles/lovelace-card-mod/card-mod.js
+    - /hacsfiles/Bubble-Card/bubble-pop-up.js?v=1.6.4
   themes: !include_dir_merge_named themes
 
-automation: !include automations.yaml
-script: !include scripts.yaml
-scene: !include scenes.yaml
+http:
+  # Cloudflare setting to unlock reverse proxy
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 172.17.0.2
+
+
+alexa: !include alexa.yaml
+
+sensor:
+
+  # Date / Time
+  - platform: time_date
+    display_options:
+      - time
+      - date
+      - date_time_iso
+      - time_date
+      - date_time
+
+  # SQL
+  - platform: sql
+    db_url: mysql://homeassistant:iothome@192.168.0.250/hass_db?charset=utf8mb4
+    scan_interval: 3600
+    queries:
+      - name: 'DataBase size'
+        query: 'SELECT table_schema "hass_db", Round(Sum(data_length + index_length) / POWER(1024,2), 1) "value" FROM information_schema.tables WHERE table_schema="homeassistant" GROUP BY table_schema;'
+        column: 'value'
+        unit_of_measurement: MB
+
+recorder:
+  db_url: mysql://homeassistant:iothome@192.168.0.250/hass_db?charset=utf8mb4
+  purge_keep_days: 30
+
+
+    
